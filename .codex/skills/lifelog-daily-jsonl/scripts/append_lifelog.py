@@ -10,6 +10,10 @@ def parse_dt(value: str) -> datetime:
     return datetime.fromisoformat(value)
 
 
+def get_repo_root() -> Path:
+    return Path(__file__).resolve().parents[4]
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='Append a lifelog JSONL entry.')
     parser.add_argument('--description', required=True)
@@ -37,13 +41,12 @@ def main() -> int:
         'related_files': args.related_files,
     }
 
-    path = Path('D:/Projects/LifeKernel/workspace/lifelog') / dt.strftime('%Y/%m/%d.jsonl')
+    repo_root = get_repo_root()
+    path = repo_root / 'workspace' / 'lifelog' / dt.strftime('%Y/%m/%d.jsonl')
     path.parent.mkdir(parents=True, exist_ok=True)
     line = json.dumps(entry, ensure_ascii=False) + '\n'
-    if path.exists():
-        path.write_text(path.read_text(encoding='utf-8') + line, encoding='utf-8')
-    else:
-        path.write_text(line, encoding='utf-8')
+    with path.open('a', encoding='utf-8') as f:
+        f.write(line)
     return 0
 
 if __name__ == '__main__':

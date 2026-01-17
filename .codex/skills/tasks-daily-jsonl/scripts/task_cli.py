@@ -7,7 +7,13 @@ from pathlib import Path
 ALLOWED_STATUS = {"pending", "done"}
 ALLOWED_PRIORITY = {"low", "medium", "high"}
 ALLOWED_MODULE = {"work", "personal", "learning", "health"}
-TASKS_PATH = Path("D:/Projects/LifeKernel/workspace/tasks/tasks.jsonl")
+
+
+def get_repo_root() -> Path:
+    return Path(__file__).resolve().parents[4]
+
+
+TASKS_PATH = get_repo_root() / "workspace" / "tasks" / "tasks.jsonl"
 
 
 def parse_dt(value: str) -> datetime:
@@ -30,9 +36,7 @@ def load_tasks() -> list[dict]:
 
 def write_tasks(tasks: list[dict]) -> None:
     TASKS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    content = "
-".join(json.dumps(t, ensure_ascii=False) for t in tasks) + "
-"
+    content = "\n".join(json.dumps(t, ensure_ascii=False) for t in tasks) + "\n"
     TASKS_PATH.write_text(content, encoding="utf-8")
 
 

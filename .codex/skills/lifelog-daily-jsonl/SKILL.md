@@ -1,4 +1,4 @@
-﻿---
+---
 name: lifelog-daily-jsonl
 description: 维护按日期组织的 JSONL lifelog（workspace/lifelog/YYYY/MM/DD.jsonl）。用于初始化日志目录、追加操作记录或按日期/模块/状态/来源进行查询与汇总。
 ---
@@ -16,7 +16,7 @@ description: 维护按日期组织的 JSONL lifelog（workspace/lifelog/YYYY/MM/
 
 ## 编码要求
 
-- 所有 lifelog 文件统一使用 **UTF-8（带 BOM）**，避免 Windows 工具默认编码导致乱码。
+- 所有 lifelog 文件统一使用 **UTF-8（不带 BOM）**，避免 Windows 工具默认编码导致乱码。
 
 ## 流程
 

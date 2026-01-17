@@ -1,13 +1,13 @@
----
+﻿---
 name: windows-task-scheduler-reminders
-description: 在 Windows 中创建/管理定时提醒（通知方式）。适用于用户要求“定时提醒/到点提醒/每天提醒/每周提醒”等，并需在创建计划任务前征求确认。
+description: 在 Windows 中创建/管理定时提醒（通知方式）。适用于用户要求“定时提醒/到点提醒/每天提醒/每周提醒”等，并需在创建计划任务前征求确认。默认使用 SYSTEM 账户运行以避免密码依赖。
 ---
 
 # Windows 定时提醒（通知）
 
 ## 概述
 
-使用 Windows 计划任务（Task Scheduler）创建提醒。提醒方式默认为“通知”；频率与时间由对话确定。创建前必须确认。
+使用 Windows 计划任务（Task Scheduler）创建提醒。提醒方式默认为“通知”；频率与时间由对话确定。创建前必须确认。默认使用 SYSTEM 账户运行，避免因账户密码导致任务不触发。
 
 ## 关键信息收集（创建前）
 
@@ -28,6 +28,7 @@ description: 在 Windows 中创建/管理定时提醒（通知方式）。适用
 3. 创建计划任务（确认后）
    - 使用 PowerShell 创建任务
    - 记录任务名称（建议规则：`reminder-YYYYMMDD-HHMM-<slug>`）
+   - 任务以 SYSTEM 账户运行（无密码依赖）
 
 4. 回执
    - 告知已创建任务名称与触发时间

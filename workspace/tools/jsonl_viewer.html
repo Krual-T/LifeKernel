@@ -41,6 +41,7 @@
     th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; font-size: 12px; text-align: left; }
     th { background: #f3f4f6; }
     .warn { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; }
+    .loading { color: var(--muted); font-size: 12px; }
   </style>
 </head>
 <body>
@@ -98,6 +99,7 @@
     </div>
 
     <div id="status" class="section muted"></div>
+    <div id="logLoading" class="section loading" style="display:none;"></div>
 
     <div class="section">
       <h2>任务（含筛选结果）</h2>
@@ -134,20 +136,45 @@
       });
     }
 
-    function toDateOnly(value) {
+    function extractDateOnly(value) {
       if (!value) return null;
+      if (typeof value === 'string') {
+        const m = value.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (m) return m[1];
+      }
       const d = new Date(value);
       if (Number.isNaN(d.getTime())) return null;
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
     }
 
     function inDateRange(iso, start, end) {
       if (!start && !end) return true;
-      const d = toDateOnly(iso);
+      const d = extractDateOnly(iso);
       if (!d) return false;
       if (start && d < start) return false;
       if (end && d > end) return false;
       return true;
+    }
+
+    function parseDateInput(value) {
+      if (!value) return null;
+      const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      const y = Number(m[1]);
+      const mo = Number(m[2]) - 1;
+      const d = Number(m[3]);
+      const dt = new Date(Date.UTC(y, mo, d));
+      return Number.isNaN(dt.getTime()) ? null : dt;
+    }
+
+    function formatDateUTC(date) {
+      const yyyy = date.getUTCFullYear();
+      const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const dd = String(date.getUTCDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
     }
 
     function statusBadge(status) {
@@ -266,12 +293,32 @@
     }
 
     const statusEl = document.getElementById('status');
+    const logLoadingEl = document.getElementById('logLoading');
+    const applyLogButton = document.getElementById('applyLogFilter');
     let allTasks = [];
     let allLifelog = [];
+    let lifelogRangeKey = null;
+    let lifelogSource = null;
+
+    function setLogLoading(isLoading, message) {
+      if (logLoadingEl) {
+        logLoadingEl.style.display = isLoading ? 'block' : 'none';
+        logLoadingEl.textContent = message || '';
+      }
+      if (applyLogButton) {
+        applyLogButton.disabled = isLoading;
+        applyLogButton.style.opacity = isLoading ? '0.6' : '';
+        applyLogButton.style.cursor = isLoading ? 'not-allowed' : '';
+      }
+      const startInput = document.getElementById('logDateStart');
+      const endInput = document.getElementById('logDateEnd');
+      if (startInput) startInput.disabled = isLoading;
+      if (endInput) endInput.disabled = isLoading;
+    }
 
     function applyTaskFilters() {
-      const start = toDateOnly(document.getElementById('taskDateStart').value);
-      const end = toDateOnly(document.getElementById('taskDateEnd').value);
+      const start = document.getElementById('taskDateStart').value || null;
+      const end = document.getElementById('taskDateEnd').value || null;
       const name = (document.getElementById('taskNameFilter').value || '').trim().toLowerCase();
       const taskStatus = document.getElementById('taskStatus').value;
       const taskPriority = document.getElementById('taskPriority').value;
@@ -291,8 +338,8 @@
     }
 
     function applyLogFilters() {
-      const start = toDateOnly(document.getElementById('logDateStart').value);
-      const end = toDateOnly(document.getElementById('logDateEnd').value);
+      const start = document.getElementById('logDateStart').value || null;
+      const end = document.getElementById('logDateEnd').value || null;
       const name = (document.getElementById('logNameFilter').value || '').trim().toLowerCase();
 
       const logs = allLifelog.filter(e => {
@@ -328,23 +375,43 @@
     }
 
     async function loadLifelogByFiles(files) {
-      const texts = await Promise.all(files.map(f => fetch(`../lifelog/${f}`).then(r => r.ok ? r.text() : '')));
-      allLifelog = texts.flatMap(t => t ? parseJsonl(t) : []);
-      applyLogFilters();
-      statusEl.textContent = `已载入全部 lifelog：${allLifelog.length} 条`;
+      if (!files || files.length === 0) {
+        allLifelog = [];
+        applyLogFilters();
+        statusEl.textContent = '未找到可加载的 lifelog 文件。';
+        return;
+      }
+      setLogLoading(true, `加载中... 0/${files.length}`);
+      const texts = [];
+      const batchSize = 20;
+      try {
+        for (let i = 0; i < files.length; i += batchSize) {
+          const batch = files.slice(i, i + batchSize);
+          const results = await Promise.all(batch.map(f => fetch(`../lifelog/${f}`).then(r => r.ok ? r.text() : '')));
+          texts.push(...results);
+          const done = Math.min(i + batchSize, files.length);
+          setLogLoading(true, `加载中... ${done}/${files.length}`);
+        }
+        allLifelog = texts.flatMap(t => t ? parseJsonl(t) : []);
+        applyLogFilters();
+        statusEl.textContent = `已加载全部 lifelog：${allLifelog.length} 条`;
+      } catch (e) {
+        allLifelog = [];
+        applyLogFilters();
+        statusEl.textContent = '加载 lifelog 失败，请稍后重试。';
+      } finally {
+        setLogLoading(false, '');
+      }
     }
 
     async function loadLifelogByRange(start, end) {
       if (!start || !end) return;
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
+      const startDate = parseDateInput(start);
+      const endDate = parseDateInput(end);
+      if (!startDate || !endDate) return;
       const files = [];
-      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        files.push(`${yyyy}/${mm}/${dd}.jsonl`);
+      for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
+        files.push(`${formatDateUTC(d).replace(/-/g, '/')}.jsonl`);
       }
       await loadLifelogByFiles(files);
     }
@@ -354,6 +421,8 @@
         const files = await tryListFilesFromDirectory();
         if (files.length > 0) {
           await loadLifelogByFiles(files);
+          lifelogSource = 'listing';
+          lifelogRangeKey = null;
           return;
         }
         throw new Error('no files from listing');
@@ -361,6 +430,28 @@
         allLifelog = [];
         applyLogFilters();
         statusEl.textContent = '无法自动获取 lifelog 列表，请使用日志日期范围筛选加载。';
+        const start = document.getElementById('logDateStart').value || null;
+        const end = document.getElementById('logDateEnd').value || null;
+        if (start && end) {
+          await loadLifelogByRange(start, end);
+          lifelogSource = 'range';
+          lifelogRangeKey = `${start}..${end}`;
+        }
+      }
+    }
+
+    async function ensureLifelogLoaded(start, end) {
+      if (start && end) {
+        const key = `${start}..${end}`;
+        if (lifelogSource !== 'range' || lifelogRangeKey !== key) {
+          lifelogRangeKey = key;
+          lifelogSource = 'range';
+          await loadLifelogByRange(start, end);
+        }
+        return;
+      }
+      if (!allLifelog.length || lifelogSource !== 'listing') {
+        await loadAllLifelog();
       }
     }
 
@@ -368,7 +459,10 @@
       currentPage = 1;
       applyTaskFilters();
     });
-    document.getElementById('applyLogFilter').addEventListener('click', () => {
+    document.getElementById('applyLogFilter').addEventListener('click', async () => {
+      const start = document.getElementById('logDateStart').value || null;
+      const end = document.getElementById('logDateEnd').value || null;
+      await ensureLifelogLoaded(start, end);
       applyLogFilters();
     });
 
@@ -381,15 +475,23 @@
 
     document.getElementById('logNameFilter').addEventListener('input', () => { applyLogFilters(); });
     document.getElementById('logDateStart').addEventListener('change', async () => {
-      const start = document.getElementById('logDateStart').value;
-      const end = document.getElementById('logDateEnd').value;
-      await loadLifelogByRange(start, end);
+      const start = document.getElementById('logDateStart').value || null;
+      const end = document.getElementById('logDateEnd').value || null;
+      if (start && end) {
+        lifelogRangeKey = `${start}..${end}`;
+        lifelogSource = 'range';
+        await loadLifelogByRange(start, end);
+      }
       applyLogFilters();
     });
     document.getElementById('logDateEnd').addEventListener('change', async () => {
-      const start = document.getElementById('logDateStart').value;
-      const end = document.getElementById('logDateEnd').value;
-      await loadLifelogByRange(start, end);
+      const start = document.getElementById('logDateStart').value || null;
+      const end = document.getElementById('logDateEnd').value || null;
+      if (start && end) {
+        lifelogRangeKey = `${start}..${end}`;
+        lifelogSource = 'range';
+        await loadLifelogByRange(start, end);
+      }
       applyLogFilters();
     });
 
@@ -408,8 +510,23 @@
       notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请通过 Live Preview 以 http:// 打开。';
     }
 
+    function initLogDefaults() {
+      const today = new Date();
+      const end = formatDateUTC(today);
+      const startDate = new Date(Date.UTC(today.getUTCFullYear() - 1, today.getUTCMonth(), today.getUTCDate()));
+      const start = formatDateUTC(startDate);
+      const startInput = document.getElementById('logDateStart');
+      const endInput = document.getElementById('logDateEnd');
+      if (startInput && !startInput.value) startInput.value = start;
+      if (endInput && !endInput.value) endInput.value = end;
+      return { start, end };
+    }
+
     loadTasks();
-    loadAllLifelog();
+    const { start: defaultStart, end: defaultEnd } = initLogDefaults();
+    lifelogRangeKey = `${defaultStart}..${defaultEnd}`;
+    lifelogSource = 'range';
+    loadLifelogByRange(defaultStart, defaultEnd);
   </script>
 </body>
 </html>

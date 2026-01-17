@@ -46,7 +46,7 @@
 <body>
   <div class="container">
     <h1>LifeKernel Dashboard</h1>
-    <div class="muted">默认加载任务与全部 lifelog（优先尝试目录列表）。任务筛选与日志筛选完全独立。</div>
+    <div class="muted">默认加载全部日期的任务与 lifelog。任务筛选与日志筛选完全独立。</div>
 
     <div id="corsNotice" class="section warn" style="display:none;"></div>
 
@@ -314,18 +314,16 @@
         applyTaskFilters();
         statusEl.textContent = '已载入任务文件：workspace/tasks/tasks.jsonl';
       } catch (e) {
-        statusEl.textContent = '无法自动读取任务文件，请通过本地服务器打开（如 python -m http.server）。';
+        statusEl.textContent = '无法自动读取任务文件，请确保 Live Preview 可访问该文件。';
       }
     }
 
     async function tryListFilesFromDirectory() {
-      // Try to parse directory listing from server (e.g., Live Preview)
       const res = await fetch('../lifelog/');
       if (!res.ok) throw new Error('no directory listing');
       const html = await res.text();
       const hrefs = Array.from(html.matchAll(/href="([^"]+)"/g)).map(m => m[1]);
       const files = hrefs.filter(h => h.endsWith('.jsonl')).map(h => h.replace(/^\\//, ''));
-      // If listing only shows year folders, skip here and fall back
       return files.filter(f => f.split('/').length >= 3);
     }
 
@@ -334,6 +332,21 @@
       allLifelog = texts.flatMap(t => t ? parseJsonl(t) : []);
       applyLogFilters();
       statusEl.textContent = `已载入全部 lifelog：${allLifelog.length} 条`;
+    }
+
+    async function loadLifelogByRange(start, end) {
+      if (!start || !end) return;
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
+      const files = [];
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        files.push(`${yyyy}/${mm}/${dd}.jsonl`);
+      }
+      await loadLifelogByFiles(files);
     }
 
     async function loadAllLifelog() {
@@ -365,20 +378,6 @@
     document.getElementById('taskModule').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
     document.getElementById('taskDateStart').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
     document.getElementById('taskDateEnd').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
-    async function loadLifelogByRange(start, end) {
-      if (!start || !end) return;
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
-      const files = [];
-      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        files.push(`${yyyy}/${mm}/${dd}.jsonl`);
-      }
-      await loadLifelogByFiles(files);
-    }
 
     document.getElementById('logNameFilter').addEventListener('input', () => { applyLogFilters(); });
     document.getElementById('logDateStart').addEventListener('change', async () => {
@@ -406,7 +405,7 @@
     const notice = document.getElementById('corsNotice');
     if (location.protocol === 'file:') {
       notice.style.display = 'block';
-      notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请通过 Live Preview 或本地服务以 http:// 打开。';
+      notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请通过 Live Preview 以 http:// 打开。';
     }
 
     loadTasks();

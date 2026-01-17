@@ -1,0 +1,31 @@
+approval_policy = "on-request"
+model_provider="packycode"
+model="gpt-5.2-codex"
+model_reasoning_effort="medium"
+disable_response_storage=true
+sandbox_mode="workspace-write"
+windows_wsl_setup_acknowledged=true
+[tui]
+#开关或过滤事件类型
+#true/false或["agent-turn-complete","approval-requested"]
+notifications=true
+[features]
+streamable_shell=false
+shell_snapshot=true
+web_search_request=true
+experimental_windows_sandbox = true
+powershell_utf8 = true
+#view_image_tool=true#默认true，可省略
+
+
+[sandbox_workspace_write]
+writable_roots = [
+  "D:\\Projects\\LifeKernel\\workspace",
+  "D:\\Projects\\LifeKernel\\.codex\\skills"
+]
+network_access = true
+
+[model_providers.packycode]
+name="packycode"
+base_url="https://codex-api.packycode.com/v1"
+wire_api="responses"

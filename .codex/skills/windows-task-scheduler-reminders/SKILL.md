@@ -40,7 +40,13 @@ description: 在 Windows 中创建/管理定时提醒（通知方式）。适用
 - `scripts/notify.ps1`：通用通知脚本（参数 `-Title`、`-Body`）
   - 内部自动安装/导入 BurntToast
   - 失败时回退为 `msg`
-- `scripts/reminder_send_file.ps1`：示例脚本（调用 `notify.ps1`）
+
+**示例脚本（写在文档中，不作为脚本文件存放）：**
+
+```powershell
+$scriptPath = Join-Path $PSScriptRoot 'notify.ps1'
+& $scriptPath -Title '提醒' -Body '12点发送文件给导师（戚荣志）'
+```
 
 ## 记录路径（避免误写）
 

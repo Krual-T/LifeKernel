@@ -100,7 +100,7 @@
     <div id="status" class="section muted"></div>
 
     <div class="section">
-      <h2>任务概览</h2>
+      <h2>任务（含筛选结果）</h2>
       <div id="taskSummary" class="row center"></div>
       <div class="section">
         <h3>未完成任务（卡片）</h3>
@@ -118,10 +118,10 @@
     </div>
 
     <div class="section">
-      <h2>Lifelog（表格）</h2>
+      <h2>日志（含筛选结果）</h2>
       <div id="lifelogTable"></div>
       <div class="section">
-        <h3>明细</h3>
+        <h3>日志卡片</h3>
         <div id="lifelogList" class="list"></div>
       </div>
     </div>
@@ -251,7 +251,8 @@
         '<tbody>'
       ];
       for (const e of entries) {
-        table.push(`<tr><td>${e.timestamp || ''}</td><td>${e.module || ''}</td><td>${e.status || ''}</td><td>${e.description || ''}</td></tr>`);
+        const desc = e.description || e.raw || '';
+        table.push(`<tr><td>${e.timestamp || ''}</td><td>${e.module || ''}</td><td>${e.status || ''}</td><td>${desc}</td></tr>`);
       }
       table.push('</tbody></table>');
       document.getElementById('lifelogTable').innerHTML = table.join('');

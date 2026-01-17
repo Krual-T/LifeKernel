@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LifeKernel JSONL Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; color: #222; }
+    h1 { margin-bottom: 8px; }
+    .row { display: flex; gap: 20px; flex-wrap: wrap; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; min-width: 260px; background: #fafafa; }
+    .section { margin-top: 20px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eee; margin-right: 6px; font-size: 12px; }
+    .list { display: grid; gap: 10px; }
+    .muted { color: #666; font-size: 12px; }
+    .error { color: #b00020; }
+    .ok { color: #1b5e20; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>LifeKernel JSONL Viewer</h1>
+  <div class="muted">?? JSONL ????????????????????????</div>
+
+  <div class="section">
+    <div class="row">
+      <div>
+        <div><strong>????</strong>?workspace/tasks/tasks.jsonl?</div>
+        <input type="file" id="tasksFile" accept=".jsonl,.txt" />
+      </div>
+      <div>
+        <div><strong>Lifelog ??</strong>?workspace/lifelog/YYYY/MM/DD.jsonl?</div>
+        <input type="file" id="lifelogFile" accept=".jsonl,.txt" multiple />
+      </div>
+    </div>
+  </div>
+
+  <div id="status" class="section muted"></div>
+
+  <div class="section">
+    <h2>????</h2>
+    <div id="taskSummary" class="row"></div>
+    <div class="section">
+      <h3>?????</h3>
+      <div id="taskList" class="list"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Lifelog</h2>
+    <div id="lifelogList" class="list"></div>
+  </div>
+
+  <script>
+    function parseJsonl(text) {
+      return text.split(/?
+/).filter(Boolean).map(line => {
+        try { return JSON.parse(line); } catch (e) { return { _parseError: true, raw: line }; }
+      });
+    }
+
+    function latestById(items) {
+      const map = new Map();
+      for (const it of items) {
+        if (!it || !it.id) continue;
+        map.set(it.id, it);
+      }
+      return Array.from(map.values());
+    }
+
+    function renderTasks(tasks) {
+      const latest = latestById(tasks);
+      const pending = latest.filter(t => t.status !== 'done');
+      const done = latest.filter(t => t.status === 'done');
+
+      const summary = document.getElementById('taskSummary');
+      summary.innerHTML = '';
+      summary.appendChild(makeCard('??', String(latest.length)));
+      summary.appendChild(makeCard('???', String(pending.length)));
+      summary.appendChild(makeCard('???', String(done.length)));
+
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      if (pending.length === 0) {
+        list.innerHTML = '<div class="muted">???????</div>';
+        return;
+      }
+      for (const t of pending) {
+        const el = document.createElement('div');
+        el.className = 'card';
+        el.innerHTML = `
+          <div><strong>[${t.module || 'work'}]</strong> ${t.title || ''}</div>
+          <div class="muted">Status: ${t.status || 'pending'} | Priority: ${t.priority || 'medium'} | Due: ${t.due_time || '-'}</div>
+          <div>${t.details || ''}</div>
+        `;
+        list.appendChild(el);
+      }
+    }
+
+    function renderLifelog(entries) {
+      const list = document.getElementById('lifelogList');
+      list.innerHTML = '';
+      if (entries.length === 0) {
+        list.innerHTML = '<div class="muted">?? lifelog</div>';
+        return;
+      }
+      for (const e of entries) {
+        const el = document.createElement('div');
+        el.className = 'card';
+        if (e._parseError) {
+          el.innerHTML = `<div class="error">?????${e.raw}</div>`;
+        } else {
+          el.innerHTML = `
+            <div><strong>${e.timestamp || ''}</strong> <span class="pill">${e.module || 'work'}</span> <span class="pill">${e.status || ''}</span></div>
+            <div>${e.description || ''}</div>
+            <div class="muted">${(e.related_files || []).join(', ')}</div>
+          `;
+        }
+        list.appendChild(el);
+      }
+    }
+
+    function makeCard(title, value) {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = `<div class="muted">${title}</div><div style="font-size:20px;">${value}</div>`;
+      return el;
+    }
+
+    const statusEl = document.getElementById('status');
+
+    document.getElementById('tasksFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      const items = parseJsonl(text);
+      renderTasks(items);
+      statusEl.textContent = `????????${file.name}`;
+    });
+
+    document.getElementById('lifelogFile').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+      let all = [];
+      for (const file of files) {
+        const text = await file.text();
+        all = all.concat(parseJsonl(text));
+      }
+      renderLifelog(all);
+      statusEl.textContent = `??? ${files.length} ? lifelog ??`;
+    });
+  </script>
+</body>
+</html>

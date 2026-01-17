@@ -1,7 +1,8 @@
-{"timestamp":"2026-01-17T22:13:12+08:00","note":"用户允许在对话中自动写入 lifelog，并要求在 workspace/memory 中记录 assistant 私有备注（格式不限）。","type":"preference"}
+﻿{"timestamp":"2026-01-17T22:13:12+08:00","note":"用户允许在对话中自动写入 lifelog，并要求在 workspace/memory 中记录 assistant 私有备注（格式不限）。","type":"preference"}
 {"timestamp":"2026-01-17T22:19:14+08:00","note":"用户偏好任务记录按日期目录，未完成任务卡片展示；JSONL 以最新记录为准（append-only）。","type":"preference"}
 {"timestamp":"2026-01-17T22:21:55+08:00","note":"任务流程：进行中任务在 workspace/tasks/task_list.md；完成任务追加到 workspace/tasks/task_log/YYYY/MM/DD.jsonl；待办卡片展示。","type":"preference"}
 {"timestamp":"2026-01-17T22:34:40+08:00","note":"用户要求所有记录的描述性内容使用中文，并已将 Git 进程改为全自动提交与推送","type":"preference"}
 {"timestamp":"2026-01-17T23:03:55+08:00","note":"用户选择提醒方式为通知，频率根据对话自定，创建前需确认","type":"preference"}
 {"timestamp":"2026-01-17T23:24:05+08:00","note":"用户导师姓名为戚荣志","type":"person"}
 {"timestamp":"2026-01-17T23:35:23+08:00","note":"用户要求以后提醒使用系统级触发（SYSTEM 账户运行），避免密码依赖","type":"preference"}
+

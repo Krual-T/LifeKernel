@@ -14,6 +14,10 @@ description: 维护按日期组织的 JSONL lifelog（workspace/lifelog/YYYY/MM/
 - **以记录的 timestamp 日期为准** 写入对应文件。
 - 若跨日（例如 23:59 之后），应写入次日的 `YYYY/MM/DD.jsonl`。
 
+## 编码要求
+
+- 所有 lifelog 文件统一使用 **UTF-8（带 BOM）**，避免 Windows 工具默认编码导致乱码。
+
 ## 流程
 
 1. 写入前确认

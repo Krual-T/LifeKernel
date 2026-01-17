@@ -1,4 +1,3 @@
-﻿$port = 8000
-$root = "D:\Projects\LifeKernel\workspace"
-Write-Host "Starting server at http://localhost:$port/tools/jsonl_viewer.html"
-python -m http.server $port --directory $root
+$port = 8000
+Write-Host "Starting dashboard at http://localhost:$port/tools/jsonl_viewer.html"
+python "D:\Projects\LifeKernel\workspace\tools\dashboard_server.py"

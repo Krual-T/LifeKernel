@@ -16,3 +16,4 @@ try {
   # Fallback: try msg in interactive session
   try { msg * "$Title`n$Body" | Out-Null } catch {}
 }
+

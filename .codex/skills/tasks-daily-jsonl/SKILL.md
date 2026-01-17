@@ -1,4 +1,4 @@
----
+﻿---
 name: tasks-daily-jsonl
 description: 使用 Markdown 维护进行中任务（workspace/tasks/task_list.md），用 JSONL 记录完成任务（workspace/tasks/task_log/YYYY/MM/DD.jsonl）。适用于新增、更新、完成或查看任务，并以卡片风格展示未完成任务。
 ---
@@ -64,3 +64,4 @@ Details: 总结 + 附表
 
 - 批量改动或删除前先确认。
 - 描述性内容统一中文。
+

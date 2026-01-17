@@ -1,4 +1,4 @@
----
+﻿---
 name: memory-folder-capture
 description: 维护 assistant 私有的 memory 文件夹（workspace/memory），用于记录偏好、决策与上下文。适用于需要自动记录内部备注的场景。
 ---
@@ -26,3 +26,4 @@ description: 维护 assistant 私有的 memory 文件夹（workspace/memory）�
 
 - 不记录敏感信息（secrets）。
 - 记录描述统一中文。
+

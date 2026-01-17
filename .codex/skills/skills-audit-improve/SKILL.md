@@ -1,4 +1,4 @@
----
+﻿---
 name: skills-audit-improve
 description: 评估、评分并改进 .codex/skills 下的已有技能。适用于用户要求审查、优化或重构 skills 的场景。
 ---
@@ -34,3 +34,4 @@ description: 评估、评分并改进 .codex/skills 下的已有技能。适用�
 
 - 未经明确同意不得修改 skills。
 - 修改保持范围可控。
+

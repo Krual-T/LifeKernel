@@ -46,7 +46,7 @@
 <body>
   <div class="container">
     <h1>LifeKernel Dashboard</h1>
-    <div class="muted">默认加载全部日期的任务与 lifelog。任务与日志筛选分离。</div>
+    <div class="muted">默认加载全部日期的任务与 lifelog。任务筛选与日志筛选完全独立。</div>
 
     <div id="corsNotice" class="section warn" style="display:none;"></div>
 
@@ -60,11 +60,11 @@
       <h2>任务筛选</h2>
       <div class="row center">
         <label>日期从：</label>
-        <input type="date" id="dateStart" />
+        <input type="date" id="taskDateStart" />
         <label>到：</label>
-        <input type="date" id="dateEnd" />
+        <input type="date" id="taskDateEnd" />
         <label>名称/关键词：</label>
-        <input type="text" id="nameFilter" placeholder="任务标题或 lifelog 描述" />
+        <input type="text" id="taskNameFilter" placeholder="任务标题" />
         <label>任务状态：</label>
         <select id="taskStatus">
           <option value="all">全部</option>
@@ -86,7 +86,20 @@
           <option value="learning">learning</option>
           <option value="health">health</option>
         </select>
-        <button id="applyFilter">应用筛选</button>
+        <button id="applyTaskFilter">应用任务筛选</button>
+      </div>
+    </div>
+
+    <div class="section card">
+      <h2>日志筛选</h2>
+      <div class="row center">
+        <label>日期从：</label>
+        <input type="date" id="logDateStart" />
+        <label>到：</label>
+        <input type="date" id="logDateEnd" />
+        <label>关键词：</label>
+        <input type="text" id="logNameFilter" placeholder="日志描述" />
+        <button id="applyLogFilter">应用日志筛选</button>
       </div>
     </div>
 
@@ -122,7 +135,7 @@
 
   <script>
     function parseJsonl(text) {
-      return text.split(/\r?\n/).filter(Boolean).map(line => {
+      return text.split(/\\r?\\n/).filter(Boolean).map(line => {
         try { return JSON.parse(line); } catch (e) { return { _parseError: true, raw: line }; }
       });
     }
@@ -261,10 +274,10 @@
     let allTasks = [];
     let allLifelog = [];
 
-    function applyFilters() {
-      const start = toDateOnly(document.getElementById('dateStart').value);
-      const end = toDateOnly(document.getElementById('dateEnd').value);
-      const name = (document.getElementById('nameFilter').value || '').trim().toLowerCase();
+    function applyTaskFilters() {
+      const start = toDateOnly(document.getElementById('taskDateStart').value);
+      const end = toDateOnly(document.getElementById('taskDateEnd').value);
+      const name = (document.getElementById('taskNameFilter').value || '').trim().toLowerCase();
       const taskStatus = document.getElementById('taskStatus').value;
       const taskPriority = document.getElementById('taskPriority').value;
       const taskModule = document.getElementById('taskModule').value;
@@ -279,6 +292,14 @@
         return inRange && inName && inStatus && inPriority && inModule;
       });
 
+      renderTasks(tasks);
+    }
+
+    function applyLogFilters() {
+      const start = toDateOnly(document.getElementById('logDateStart').value);
+      const end = toDateOnly(document.getElementById('logDateEnd').value);
+      const name = (document.getElementById('logNameFilter').value || '').trim().toLowerCase();
+
       const logs = allLifelog.filter(e => {
         if (e._parseError) return false;
         const inRange = inDateRange(e.timestamp || '', start, end);
@@ -286,7 +307,6 @@
         return inRange && inName;
       });
 
-      renderTasks(tasks);
       renderLifelog(logs);
     }
 
@@ -296,7 +316,7 @@
         if (!res.ok) throw new Error('tasks.jsonl not found');
         const text = await res.text();
         allTasks = parseJsonl(text);
-        applyFilters();
+        applyTaskFilters();
         statusEl.textContent = '已载入任务文件：workspace/tasks/tasks.jsonl';
       } catch (e) {
         statusEl.textContent = '无法自动读取任务文件，请通过本地服务器打开（如 python -m http.server）。';
@@ -309,40 +329,46 @@
         if (!res.ok) throw new Error('api failed');
         const data = await res.json();
         allLifelog = Array.isArray(data) ? data : [];
-        applyFilters();
+        applyLogFilters();
         statusEl.textContent = `已载入全部 lifelog：${allLifelog.length} 条`;
       } catch (e) {
         allLifelog = [];
-        applyFilters();
+        applyLogFilters();
         statusEl.textContent = '无法读取 lifelog，请用本地服务启动 dashboard_server.py。';
       }
     }
 
-    document.getElementById('applyFilter').addEventListener('click', () => {
+    document.getElementById('applyTaskFilter').addEventListener('click', () => {
       currentPage = 1;
-      applyFilters();
+      applyTaskFilters();
+    });
+    document.getElementById('applyLogFilter').addEventListener('click', () => {
+      applyLogFilters();
     });
 
-    document.getElementById('nameFilter').addEventListener('input', () => { currentPage = 1; applyFilters(); });
-    document.getElementById('taskStatus').addEventListener('change', () => { currentPage = 1; applyFilters(); });
-    document.getElementById('taskPriority').addEventListener('change', () => { currentPage = 1; applyFilters(); });
-    document.getElementById('taskModule').addEventListener('change', () => { currentPage = 1; applyFilters(); });
-    document.getElementById('dateStart').addEventListener('change', () => { currentPage = 1; applyFilters(); });
-    document.getElementById('dateEnd').addEventListener('change', () => { currentPage = 1; applyFilters(); });
+    document.getElementById('taskNameFilter').addEventListener('input', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskStatus').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskPriority').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskModule').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskDateStart').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskDateEnd').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('logNameFilter').addEventListener('input', () => { applyLogFilters(); });
+    document.getElementById('logDateStart').addEventListener('change', () => { applyLogFilters(); });
+    document.getElementById('logDateEnd').addEventListener('change', () => { applyLogFilters(); });
 
     document.getElementById('prevPage').addEventListener('click', () => {
       currentPage = Math.max(1, currentPage - 1);
-      applyFilters();
+      applyTaskFilters();
     });
     document.getElementById('nextPage').addEventListener('click', () => {
       currentPage += 1;
-      applyFilters();
+      applyTaskFilters();
     });
 
     const notice = document.getElementById('corsNotice');
     if (location.protocol === 'file:') {
       notice.style.display = 'block';
-      notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请在 workspace 目录启动本地服务：<br><code>python -m http.server 8000</code><br>然后打开 <code>http://localhost:8000/tools/jsonl_viewer.html</code>。';
+      notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请在 workspace 目录启动本地服务：<br><code>python workspace/tools/dashboard_server.py</code><br>然后打开 <code>http://localhost:8000/tools/jsonl_viewer.html</code>。';
     }
 
     loadTasks();

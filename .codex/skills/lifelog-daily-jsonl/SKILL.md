@@ -9,13 +9,18 @@ description: 维护按日期组织的 JSONL lifelog（workspace/lifelog/YYYY/MM/
 
 在 `workspace/lifelog/YYYY/MM/DD.jsonl` 中维护每日 JSONL 日志，每行一条记录，用于保存 Git 之外的操作上下文。
 
+## 写入规则（关键）
+
+- **以记录的 timestamp 日期为准** 写入对应文件。
+- 若跨日（例如 23:59 之后），应写入次日的 `YYYY/MM/DD.jsonl`。
+
 ## 流程
 
 1. 写入前确认
    - 若用户未明确要求写入，先征求确认。
 
 2. 确保当日路径存在
-   - 根据本地日期生成路径：`workspace/lifelog/YYYY/MM/DD.jsonl`。
+   - 根据记录时间生成路径：`workspace/lifelog/YYYY/MM/DD.jsonl`。
    - 若目录或文件不存在，创建之。
 
 3. 追加记录（JSONL）

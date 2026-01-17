@@ -29,10 +29,15 @@ description: 在 Windows 中创建/管理定时提醒（通知方式）。适用
    - 使用 PowerShell 创建任务
    - 记录任务名称（建议规则：`reminder-YYYYMMDD-HHMM-<slug>`）
    - 任务以 SYSTEM 账户运行（无密码依赖）
+   - 任务脚本使用 `scripts/reminder_send_file.ps1`（可按提醒内容更新）
 
 4. 回执
    - 告知已创建任务名称与触发时间
    - 如需，展示删除/更新方法
+
+## 脚本
+
+- `scripts/reminder_send_file.ps1`：默认通知脚本（msg 广播）
 
 ## 备注
 

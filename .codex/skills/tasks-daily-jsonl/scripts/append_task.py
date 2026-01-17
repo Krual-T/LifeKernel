@@ -4,6 +4,11 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+ALLOWED_STATUS = {"pending", "done"}
+ALLOWED_PRIORITY = {"low", "medium", "high"}
+ALLOWED_MODULE = {"work", "personal", "learning", "health"}
+
+
 def parse_dt(value: str) -> datetime:
     if value.endswith('Z'):
         value = value[:-1] + '+00:00'
@@ -25,9 +30,18 @@ def main() -> int:
     parser.add_argument('--related-files', nargs='*', default=[])
     args = parser.parse_args()
 
+    if args.status not in ALLOWED_STATUS:
+        raise SystemExit(f"invalid --status: {args.status}")
+    if args.priority not in ALLOWED_PRIORITY:
+        raise SystemExit(f"invalid --priority: {args.priority}")
+    if args.module not in ALLOWED_MODULE:
+        raise SystemExit(f"invalid --module: {args.module}")
+
     now = datetime.now().astimezone()
     created = parse_dt(args.created_at).astimezone() if args.created_at else now
     completed = parse_dt(args.completed_at).astimezone() if args.completed_at else None
+    if args.status == "done" and completed is None:
+        completed = now
     entry_id = args.id or created.strftime('%Y-%m-%d-%H%M') + '-task'
 
     entry = {
@@ -47,10 +61,8 @@ def main() -> int:
     path = Path('D:/Projects/LifeKernel/workspace/tasks/tasks.jsonl')
     path.parent.mkdir(parents=True, exist_ok=True)
     line = json.dumps(entry, ensure_ascii=False) + '\n'
-    if path.exists():
-        path.write_text(path.read_text(encoding='utf-8') + line, encoding='utf-8')
-    else:
-        path.write_text(line, encoding='utf-8')
+    with path.open('a', encoding='utf-8') as f:
+        f.write(line)
     return 0
 
 if __name__ == '__main__':

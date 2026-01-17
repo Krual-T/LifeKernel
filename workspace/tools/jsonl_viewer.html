@@ -72,6 +72,11 @@
     function renderTasks(tasks) {
       const latest = latestById(tasks);
       const pending = latest.filter(t => t.status !== 'done');
+      pending.sort((a, b) => {
+        const da = a.due_time || '';
+        const db = b.due_time || '';
+        return da.localeCompare(db);
+      });
       const done = latest.filter(t => t.status === 'done');
 
       const summary = document.getElementById('taskSummary');

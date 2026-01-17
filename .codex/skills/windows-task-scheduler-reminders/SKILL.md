@@ -40,6 +40,11 @@ description: 在 Windows 中创建/管理定时提醒（通知方式）。适用
 - `scripts/notify.ps1`：通用通知脚本（参数 `-Title`、`-Body`）
 - `scripts/reminder_send_file.ps1`：示例脚本（调用 `notify.ps1`）
 
+## 记录路径（避免误写）
+
+- 所有操作记录写入：`workspace/lifelog/YYYY/MM/DD.jsonl`
+- 任务清单与完成记录路径以 `tasks-daily-jsonl` 为准
+
 ## 通用命令模板
 
 ```

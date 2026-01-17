@@ -29,7 +29,7 @@ description: 在 Windows 中创建/管理定时提醒（通知方式）。适用
    - 使用 PowerShell 创建任务
    - 记录任务名称（建议规则：`reminder-YYYYMMDD-HHMM-<slug>`）
    - 任务以 SYSTEM 账户运行（无密码依赖）
-   - 任务脚本使用 `scripts/reminder_send_file.ps1`（可按提醒内容更新）
+   - 通用脚本使用 `scripts/notify.ps1`
 
 4. 回执
    - 告知已创建任务名称与触发时间
@@ -37,7 +37,16 @@ description: 在 Windows 中创建/管理定时提醒（通知方式）。适用
 
 ## 脚本
 
-- `scripts/reminder_send_file.ps1`：默认通知脚本（msg 广播）
+- `scripts/notify.ps1`：通用通知脚本（参数 `-Title`、`-Body`）
+- `scripts/reminder_send_file.ps1`：示例脚本（调用 `notify.ps1`）
+
+## 通用命令模板
+
+```
+$taskName = "reminder-YYYYMMDD-HHMM-<slug>"
+$tr = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "D:\Projects\LifeKernel\.codex\skills\windows-task-scheduler-reminders\scripts\notify.ps1" -Title "提醒" -Body "<内容>"'
+cmd /c "schtasks /Create /SC ONCE /TN \"$taskName\" /TR \"$tr\" /ST HH:MM /SD YYYY/MM/DD /RU SYSTEM /RL HIGHEST /F"
+```
 
 ## 备注
 

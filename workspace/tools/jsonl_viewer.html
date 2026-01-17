@@ -7,39 +7,40 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; color: #222; }
     h1 { margin-bottom: 8px; }
-    .row { display: flex; gap: 20px; flex-wrap: wrap; }
+    .row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
     .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; min-width: 260px; background: #fafafa; }
     .section { margin-top: 20px; }
     .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eee; margin-right: 6px; font-size: 12px; }
     .list { display: grid; gap: 10px; }
     .muted { color: #666; font-size: 12px; }
     .error { color: #b00020; }
+    input[type=date] { padding: 4px 6px; }
+    button { padding: 6px 10px; }
   </style>
 </head>
 <body>
   <h1>LifeKernel JSONL Viewer</h1>
-  <div class="muted">选择 JSONL 文件后即可在浏览器中查看（本页面不会上传数据）。</div>
+  <div class="muted">???? `workspace/tasks/tasks.jsonl`???????? lifelog???????????</div>
 
   <div class="section">
     <div class="row">
-      <div>
-        <div><strong>任务文件</strong>（workspace/tasks/tasks.jsonl）</div>
-        <input type="file" id="tasksFile" accept=".jsonl,.txt" />
-      </div>
-      <div>
-        <div><strong>Lifelog 文件</strong>（workspace/lifelog/YYYY/MM/DD.jsonl）</div>
-        <input type="file" id="lifelogFile" accept=".jsonl,.txt" multiple />
-      </div>
+      <div class="muted">?????workspace/tasks/tasks.jsonl</div>
+      <div class="muted">Lifelog ???workspace/lifelog/YYYY/MM/DD.jsonl</div>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <label for="lifelogDate">?????</label>
+      <input type="date" id="lifelogDate" />
+      <button id="loadLifelogBtn">?? Lifelog</button>
     </div>
   </div>
 
   <div id="status" class="section muted"></div>
 
   <div class="section">
-    <h2>任务概览</h2>
+    <h2>????</h2>
     <div id="taskSummary" class="row"></div>
     <div class="section">
-      <h3>未完成任务</h3>
+      <h3>?????</h3>
       <div id="taskList" class="list"></div>
     </div>
   </div>
@@ -51,7 +52,8 @@
 
   <script>
     function parseJsonl(text) {
-      return text.split(/\r?\n/).filter(Boolean).map(line => {
+      return text.split(/?
+/).filter(Boolean).map(line => {
         try { return JSON.parse(line); } catch (e) { return { _parseError: true, raw: line }; }
       });
     }
@@ -63,14 +65,14 @@
 
       const summary = document.getElementById('taskSummary');
       summary.innerHTML = '';
-      summary.appendChild(makeCard('总数', String(tasks.length)));
-      summary.appendChild(makeCard('未完成', String(pending.length)));
-      summary.appendChild(makeCard('已完成', String(done.length)));
+      summary.appendChild(makeCard('??', String(tasks.length)));
+      summary.appendChild(makeCard('???', String(pending.length)));
+      summary.appendChild(makeCard('???', String(done.length)));
 
       const list = document.getElementById('taskList');
       list.innerHTML = '';
       if (pending.length === 0) {
-        list.innerHTML = '<div class="muted">暂无未完成任务</div>';
+        list.innerHTML = '<div class="muted">???????</div>';
         return;
       }
       for (const t of pending) {
@@ -89,14 +91,14 @@
       const list = document.getElementById('lifelogList');
       list.innerHTML = '';
       if (entries.length === 0) {
-        list.innerHTML = '<div class="muted">暂无 lifelog</div>';
+        list.innerHTML = '<div class="muted">?? lifelog</div>';
         return;
       }
       for (const e of entries) {
         const el = document.createElement('div');
         el.className = 'card';
         if (e._parseError) {
-          el.innerHTML = `<div class="error">解析失败：${e.raw}</div>`;
+          el.innerHTML = `<div class="error">?????${e.raw}</div>`;
         } else {
           el.innerHTML = `
             <div><strong>${e.timestamp || ''}</strong> <span class="pill">${e.module || 'work'}</span> <span class="pill">${e.status || ''}</span></div>
@@ -117,26 +119,54 @@
 
     const statusEl = document.getElementById('status');
 
-    document.getElementById('tasksFile').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const text = await file.text();
-      const items = parseJsonl(text);
-      renderTasks(items);
-      statusEl.textContent = `已载入任务文件：${file.name}`;
+    async function loadTasks() {
+      try {
+        const res = await fetch('../tasks/tasks.jsonl');
+        if (!res.ok) throw new Error('tasks.jsonl not found');
+        const text = await res.text();
+        renderTasks(parseJsonl(text));
+        statusEl.textContent = '??????????workspace/tasks/tasks.jsonl';
+      } catch (e) {
+        statusEl.textContent = '???????????????????????? file ???';
+      }
+    }
+
+    function formatDatePath(date) {
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      return { yyyy, mm, dd };
+    }
+
+    async function loadLifelogByDate(date) {
+      const { yyyy, mm, dd } = formatDatePath(date);
+      const path = `../lifelog/${yyyy}/${mm}/${dd}.jsonl`;
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error('lifelog not found');
+        const text = await res.text();
+        renderLifelog(parseJsonl(text));
+        statusEl.textContent = `??? lifelog?${yyyy}-${mm}-${dd}`;
+      } catch (e) {
+        renderLifelog([]);
+        statusEl.textContent = `??? lifelog?${yyyy}-${mm}-${dd}`;
+      }
+    }
+
+    const dateInput = document.getElementById('lifelogDate');
+    const btn = document.getElementById('loadLifelogBtn');
+
+    btn.addEventListener('click', async () => {
+      if (!dateInput.value) return;
+      const date = new Date(dateInput.value + 'T00:00:00');
+      await loadLifelogByDate(date);
     });
 
-    document.getElementById('lifelogFile').addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files || []);
-      if (files.length === 0) return;
-      let all = [];
-      for (const file of files) {
-        const text = await file.text();
-        all = all.concat(parseJsonl(text));
-      }
-      renderLifelog(all);
-      statusEl.textContent = '已载入 ' + files.length + ' 个 lifelog 文件';
-    });
+    // Auto load on open
+    const today = new Date();
+    dateInput.value = today.toISOString().slice(0, 10);
+    loadTasks();
+    loadLifelogByDate(today);
   </script>
 </body>
 </html>

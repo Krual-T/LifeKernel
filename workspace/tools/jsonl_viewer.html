@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LifeKernel Pulse</title>
+  <title>LifeKernel Dashboard</title>
   <style>
     :root {
       --bg: #f6f7fb;
@@ -21,9 +21,16 @@
     h2 { margin: 16px 0 8px; }
     h3 { margin: 12px 0 8px; }
     .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .row.center { justify-content: center; }
     .card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--card); box-shadow: var(--shadow); }
     .section { margin-top: 20px; }
     .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef2ff; margin-right: 6px; font-size: 12px; color: #3730a3; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-done { background: #d1fae5; color: #065f46; }
+    .priority-low { background: #e5e7eb; color: #374151; }
+    .priority-medium { background: #dbeafe; color: #1e40af; }
+    .priority-high { background: #fee2e2; color: #991b1b; }
     .list { display: grid; gap: 12px; }
     .muted { color: var(--muted); font-size: 12px; }
     .error { color: #b00020; }
@@ -38,17 +45,17 @@
 </head>
 <body>
   <div class="container">
-  <h1>LifeKernel Pulse</h1>
+  <h1>LifeKernel Dashboard</h1>
     <div class="muted">自动读取 workspace/tasks/tasks.jsonl 与当日 lifelog，支持日期与名称筛选。</div>
 
     <div id="corsNotice" class="section warn" style="display:none;"></div>
 
     <div class="section card">
-      <div class="row">
+      <div class="row center">
         <div class="muted">任务文件（workspace/tasks/tasks.jsonl）</div>
         <div class="muted">Lifelog 文件（workspace/lifelog/YYYY/MM/DD.jsonl）</div>
       </div>
-      <div class="row" style="margin-top:12px;">
+      <div class="row center" style="margin-top:12px;">
         <label for="lifelogDate">Lifelog 日期：</label>
         <input type="date" id="lifelogDate" />
         <button id="loadLifelogBtn">加载 Lifelog</button>
@@ -57,7 +64,7 @@
 
     <div class="section card">
       <h2>筛选</h2>
-    <div class="row">
+      <div class="row center">
       <label>日期从：</label>
       <input type="date" id="dateStart" />
       <label>到：</label>
@@ -93,7 +100,7 @@
 
     <div class="section">
       <h2>任务概览</h2>
-      <div id="taskSummary" class="row"></div>
+      <div id="taskSummary" class="row center"></div>
       <div class="section">
         <h3>未完成任务（卡片）</h3>
         <div id="taskList" class="list"></div>
@@ -101,7 +108,7 @@
       <div class="section">
       <h3>任务表格（含已完成）</h3>
       <div id="taskTable"></div>
-      <div class="row" style="margin-top:10px;">
+      <div class="row center" style="margin-top:10px;">
         <button id="prevPage">上一页</button>
         <span id="pageInfo" class="muted"></span>
         <button id="nextPage">下一页</button>
@@ -155,6 +162,18 @@
       return items.slice(start, end);
     }
 
+    function statusBadge(status) {
+      const s = status || 'pending';
+      const cls = s === 'done' ? 'status-done' : 'status-pending';
+      return `<span class="badge ${cls}">${s}</span>`;
+    }
+
+    function priorityBadge(priority) {
+      const p = priority || 'medium';
+      const cls = p === 'high' ? 'priority-high' : (p === 'low' ? 'priority-low' : 'priority-medium');
+      return `<span class="badge ${cls}">${p}</span>`;
+    }
+
     function renderTasks(tasks) {
       const pending = tasks.filter(t => t.status !== 'done');
       pending.sort((a, b) => (a.due_time || '').localeCompare(b.due_time || ''));
@@ -176,7 +195,7 @@
           el.className = 'card';
           el.innerHTML = `
             <div><strong>[${t.module || 'work'}]</strong> ${t.title || ''}</div>
-            <div class="muted">Status: ${t.status || 'pending'} | Priority: ${t.priority || 'medium'} | Due: ${t.due_time || '-'}</div>
+            <div class="muted">Status: ${statusBadge(t.status)} | Priority: ${priorityBadge(t.priority)} | Due: ${t.due_time || '-'}</div>
             <div>${t.details || ''}</div>
           `;
           list.appendChild(el);
@@ -194,7 +213,7 @@
         '<tbody>'
       ];
       for (const t of tasks) {
-        table.push(`<tr><td>${t.id || ''}</td><td>${t.title || ''}</td><td>${t.status || ''}</td><td>${t.priority || ''}</td><td>${t.module || ''}</td><td>${t.created_at || ''}</td><td>${t.completed_at || ''}</td><td>${t.due_time || ''}</td></tr>`);
+        table.push(`<tr><td>${t.id || ''}</td><td>${t.title || ''}</td><td>${statusBadge(t.status)}</td><td>${priorityBadge(t.priority)}</td><td>${t.module || ''}</td><td>${t.created_at || ''}</td><td>${t.completed_at || ''}</td><td>${t.due_time || ''}</td></tr>`);
       }
       table.push('</tbody></table>');
       document.getElementById('taskTable').innerHTML = table.join('');

@@ -5,75 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LifeKernel JSONL Viewer</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; color: #222; }
-    h1 { margin-bottom: 8px; }
-    .row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; min-width: 260px; background: #fafafa; }
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --border: #e5e7eb;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 8px; }
+    h2 { margin: 16px 0 8px; }
+    h3 { margin: 12px 0 8px; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--card); box-shadow: var(--shadow); }
     .section { margin-top: 20px; }
-    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eee; margin-right: 6px; font-size: 12px; }
-    .list { display: grid; gap: 10px; }
-    .muted { color: #666; font-size: 12px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef2ff; margin-right: 6px; font-size: 12px; color: #3730a3; }
+    .list { display: grid; gap: 12px; }
+    .muted { color: var(--muted); font-size: 12px; }
     .error { color: #b00020; }
-    input[type=date], input[type=text] { padding: 4px 6px; }
-    button { padding: 6px 10px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 12px; text-align: left; }
-    th { background: #f2f2f2; }
-    .warn { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; }
+    input[type=date], input[type=text], select { padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; }
+    button { padding: 8px 12px; border: 0; border-radius: 8px; background: var(--primary); color: #fff; cursor: pointer; }
+    button:hover { filter: brightness(0.95); }
+    table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+    th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; font-size: 12px; text-align: left; }
+    th { background: #f3f4f6; }
+    .warn { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
-  <h1>LifeKernel JSONL Viewer</h1>
-  <div class="muted">自动读取 workspace/tasks/tasks.jsonl 与当日 lifelog，支持日期与名称筛选。</div>
+  <div class="container">
+    <h1>LifeKernel JSONL Viewer</h1>
+    <div class="muted">自动读取 workspace/tasks/tasks.jsonl 与当日 lifelog，支持日期与名称筛选。</div>
 
-  <div id="corsNotice" class="section warn" style="display:none;"></div>
+    <div id="corsNotice" class="section warn" style="display:none;"></div>
 
-  <div class="section">
-    <div class="row">
-      <div class="muted">任务文件（workspace/tasks/tasks.jsonl）</div>
-      <div class="muted">Lifelog 文件（workspace/lifelog/YYYY/MM/DD.jsonl）</div>
+    <div class="section card">
+      <div class="row">
+        <div class="muted">任务文件（workspace/tasks/tasks.jsonl）</div>
+        <div class="muted">Lifelog 文件（workspace/lifelog/YYYY/MM/DD.jsonl）</div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <label for="lifelogDate">Lifelog 日期：</label>
+        <input type="date" id="lifelogDate" />
+        <button id="loadLifelogBtn">加载 Lifelog</button>
+      </div>
     </div>
-    <div class="row" style="margin-top:8px;">
-      <label for="lifelogDate">Lifelog 日期：</label>
-      <input type="date" id="lifelogDate" />
-      <button id="loadLifelogBtn">加载 Lifelog</button>
+
+    <div class="section card">
+      <h2>筛选</h2>
+      <div class="row">
+        <label>日期从：</label>
+        <input type="date" id="dateStart" />
+        <label>到：</label>
+        <input type="date" id="dateEnd" />
+        <label>名称/关键词：</label>
+        <input type="text" id="nameFilter" placeholder="任务标题或 lifelog 描述" />
+        <label>任务状态：</label>
+        <select id="taskStatus">
+          <option value="all">全部</option>
+          <option value="pending">未完成</option>
+          <option value="done">已完成</option>
+        </select>
+        <button id="applyFilter">应用筛选</button>
+      </div>
     </div>
-  </div>
 
-  <div class="section">
-    <h2>筛选</h2>
-    <div class="row">
-      <label>日期从：</label>
-      <input type="date" id="dateStart" />
-      <label>到：</label>
-      <input type="date" id="dateEnd" />
-      <label>名称/关键词：</label>
-      <input type="text" id="nameFilter" placeholder="任务标题或 lifelog 描述" />
-      <button id="applyFilter">应用筛选</button>
-    </div>
-  </div>
+    <div id="status" class="section muted"></div>
 
-  <div id="status" class="section muted"></div>
-
-  <div class="section">
-    <h2>任务概览</h2>
-    <div id="taskSummary" class="row"></div>
     <div class="section">
-      <h3>未完成任务（卡片）</h3>
-      <div id="taskList" class="list"></div>
+      <h2>任务概览</h2>
+      <div id="taskSummary" class="row"></div>
+      <div class="section">
+        <h3>未完成任务（卡片）</h3>
+        <div id="taskList" class="list"></div>
+      </div>
+      <div class="section">
+        <h3>任务表格（含已完成）</h3>
+        <div id="taskTable"></div>
+      </div>
     </div>
-    <div class="section">
-      <h3>任务表格</h3>
-      <div id="taskTable"></div>
-    </div>
-  </div>
 
-  <div class="section">
-    <h2>Lifelog（表格）</h2>
-    <div id="lifelogTable"></div>
     <div class="section">
-      <h3>明细</h3>
-      <div id="lifelogList" class="list"></div>
+      <h2>Lifelog（表格）</h2>
+      <div id="lifelogTable"></div>
+      <div class="section">
+        <h3>明细</h3>
+        <div id="lifelogList" class="list"></div>
+      </div>
     </div>
   </div>
 
@@ -196,12 +218,14 @@
       const start = toDateOnly(document.getElementById('dateStart').value);
       const end = toDateOnly(document.getElementById('dateEnd').value);
       const name = (document.getElementById('nameFilter').value || '').trim().toLowerCase();
+      const taskStatus = document.getElementById('taskStatus').value;
 
       const tasks = allTasks.filter(t => {
         const dateField = t.due_time || t.created_at || '';
         const inRange = inDateRange(dateField, start, end);
         const inName = !name || String(t.title || '').toLowerCase().includes(name);
-        return inRange && inName;
+        const inStatus = taskStatus === 'all' || t.status === taskStatus;
+        return inRange && inName && inStatus;
       });
 
       const logs = allLifelog.filter(e => {

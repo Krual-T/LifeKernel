@@ -1,4 +1,4 @@
-﻿---
+﻿﻿﻿---
 name: skill-pattern-capture
 description: 在对话中识别可复用流程并提议沉淀为 skill。适用于出现明确步骤、重复任务、或用户表达“以后都这样做/自动化”的场景。
 ---

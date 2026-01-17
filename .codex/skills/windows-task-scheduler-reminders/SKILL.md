@@ -1,4 +1,4 @@
-﻿---
+﻿﻿﻿---
 name: windows-task-scheduler-reminders
 description: 在 Windows 中创建/管理定时提醒（通知方式）。适用于用户要求“定时提醒/到点提醒/每天提醒/每周提醒”等，并需在创建计划任务前征求确认。默认使用 BurntToast 通知（当前用户会话）。
 ---

@@ -1,4 +1,4 @@
-approval_policy = "on-request"
+﻿approval_policy = "on-request"
 model_provider="packycode"
 model="gpt-5.2-codex"
 model_reasoning_effort="medium"

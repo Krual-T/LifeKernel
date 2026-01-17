@@ -1,0 +1,1 @@
+{"id":"2026-01-18-0003-rewrite-skill-utf8","timestamp":"2026-01-18T00:03:12+08:00","skill_name":"lifelog-daily-jsonl","description":"重写 windows-task-scheduler-reminders/SKILL.md 为纯 UTF-8（无 BOM），内容按用户提供版本更新","status":"completed","related_files":[".codex/skills/windows-task-scheduler-reminders/SKILL.md"],"module":"work","source":"conversation"}

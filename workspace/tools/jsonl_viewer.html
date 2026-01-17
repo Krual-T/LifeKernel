@@ -16,56 +16,71 @@
     .error { color: #b00020; }
     input[type=date], input[type=text] { padding: 4px 6px; }
     button { padding: 6px 10px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 12px; text-align: left; }
+    th { background: #f2f2f2; }
+    .warn { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 6px; }
   </style>
 </head>
 <body>
   <h1>LifeKernel JSONL Viewer</h1>
-  <div class="muted">自动读取 workspace/tasks/tasks.jsonl 与当日 lifelog，支持日期与名称筛选。</div>
+  <div class="muted">???? workspace/tasks/tasks.jsonl ??? lifelog???????????</div>
+
+  <div id="corsNotice" class="section warn" style="display:none;"></div>
 
   <div class="section">
     <div class="row">
-      <div class="muted">任务文件（workspace/tasks/tasks.jsonl）</div>
-      <div class="muted">Lifelog 文件（workspace/lifelog/YYYY/MM/DD.jsonl）</div>
+      <div class="muted">?????workspace/tasks/tasks.jsonl?</div>
+      <div class="muted">Lifelog ???workspace/lifelog/YYYY/MM/DD.jsonl?</div>
     </div>
     <div class="row" style="margin-top:8px;">
-      <label for="lifelogDate">Lifelog 日期：</label>
+      <label for="lifelogDate">Lifelog ???</label>
       <input type="date" id="lifelogDate" />
-      <button id="loadLifelogBtn">加载 Lifelog</button>
+      <button id="loadLifelogBtn">?? Lifelog</button>
     </div>
   </div>
 
   <div class="section">
-    <h2>筛选</h2>
+    <h2>??</h2>
     <div class="row">
-      <label>日期从：</label>
+      <label>????</label>
       <input type="date" id="dateStart" />
-      <label>到：</label>
+      <label>??</label>
       <input type="date" id="dateEnd" />
-      <label>名称/关键词：</label>
-      <input type="text" id="nameFilter" placeholder="任务标题或 lifelog 描述" />
-      <button id="applyFilter">应用筛选</button>
+      <label>??/????</label>
+      <input type="text" id="nameFilter" placeholder="????? lifelog ??" />
+      <button id="applyFilter">????</button>
     </div>
   </div>
 
   <div id="status" class="section muted"></div>
 
   <div class="section">
-    <h2>任务概览</h2>
+    <h2>????</h2>
     <div id="taskSummary" class="row"></div>
     <div class="section">
-      <h3>未完成任务</h3>
+      <h3>?????????</h3>
       <div id="taskList" class="list"></div>
+    </div>
+    <div class="section">
+      <h3>????</h3>
+      <div id="taskTable"></div>
     </div>
   </div>
 
   <div class="section">
-    <h2>Lifelog</h2>
-    <div id="lifelogList" class="list"></div>
+    <h2>Lifelog????</h2>
+    <div id="lifelogTable"></div>
+    <div class="section">
+      <h3>??</h3>
+      <div id="lifelogList" class="list"></div>
+    </div>
   </div>
 
   <script>
     function parseJsonl(text) {
-      return text.split(/\r?\n/).filter(Boolean).map(line => {
+      return text.split(/?
+/).filter(Boolean).map(line => {
         try { return JSON.parse(line); } catch (e) { return { _parseError: true, raw: line }; }
       });
     }
@@ -93,49 +108,78 @@
 
       const summary = document.getElementById('taskSummary');
       summary.innerHTML = '';
-      summary.appendChild(makeCard('总数', String(tasks.length)));
-      summary.appendChild(makeCard('未完成', String(pending.length)));
-      summary.appendChild(makeCard('已完成', String(done.length)));
+      summary.appendChild(makeCard('??', String(tasks.length)));
+      summary.appendChild(makeCard('???', String(pending.length)));
+      summary.appendChild(makeCard('???', String(done.length)));
 
       const list = document.getElementById('taskList');
       list.innerHTML = '';
       if (pending.length === 0) {
-        list.innerHTML = '<div class="muted">暂无未完成任务</div>';
-        return;
+        list.innerHTML = '<div class="muted">???????</div>';
+      } else {
+        for (const t of pending) {
+          const el = document.createElement('div');
+          el.className = 'card';
+          el.innerHTML = `
+            <div><strong>[${t.module || 'work'}]</strong> ${t.title || ''}</div>
+            <div class="muted">Status: ${t.status || 'pending'} | Priority: ${t.priority || 'medium'} | Due: ${t.due_time || '-'}</div>
+            <div>${t.details || ''}</div>
+          `;
+          list.appendChild(el);
+        }
       }
-      for (const t of pending) {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.innerHTML = `
-          <div><strong>[${t.module || 'work'}]</strong> ${t.title || ''}</div>
-          <div class="muted">Status: ${t.status || 'pending'} | Priority: ${t.priority || 'medium'} | Due: ${t.due_time || '-'}</div>
-          <div>${t.details || ''}</div>
-        `;
-        list.appendChild(el);
+
+      renderTaskTable(tasks);
+    }
+
+    function renderTaskTable(tasks) {
+      const table = [
+        '<table>',
+        '<thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Priority</th><th>Module</th><th>Created</th><th>Completed</th><th>Due</th></tr></thead>',
+        '<tbody>'
+      ];
+      for (const t of tasks) {
+        table.push(`<tr><td>${t.id || ''}</td><td>${t.title || ''}</td><td>${t.status || ''}</td><td>${t.priority || ''}</td><td>${t.module || ''}</td><td>${t.created_at || ''}</td><td>${t.completed_at || ''}</td><td>${t.due_time || ''}</td></tr>`);
       }
+      table.push('</tbody></table>');
+      document.getElementById('taskTable').innerHTML = table.join('');
     }
 
     function renderLifelog(entries) {
       const list = document.getElementById('lifelogList');
       list.innerHTML = '';
       if (entries.length === 0) {
-        list.innerHTML = '<div class="muted">暂无 lifelog</div>';
-        return;
-      }
-      for (const e of entries) {
-        const el = document.createElement('div');
-        el.className = 'card';
-        if (e._parseError) {
-          el.innerHTML = `<div class="error">解析失败：${e.raw}</div>`;
-        } else {
-          el.innerHTML = `
-            <div><strong>${e.timestamp || ''}</strong> <span class="pill">${e.module || 'work'}</span> <span class="pill">${e.status || ''}</span></div>
-            <div>${e.description || ''}</div>
-            <div class="muted">${(e.related_files || []).join(', ')}</div>
-          `;
+        list.innerHTML = '<div class="muted">?? lifelog</div>';
+      } else {
+        for (const e of entries) {
+          const el = document.createElement('div');
+          el.className = 'card';
+          if (e._parseError) {
+            el.innerHTML = `<div class="error">?????${e.raw}</div>`;
+          } else {
+            el.innerHTML = `
+              <div><strong>${e.timestamp || ''}</strong> <span class="pill">${e.module || 'work'}</span> <span class="pill">${e.status || ''}</span></div>
+              <div>${e.description || ''}</div>
+              <div class="muted">${(e.related_files || []).join(', ')}</div>
+            `;
+          }
+          list.appendChild(el);
         }
-        list.appendChild(el);
       }
+      renderLifelogTable(entries.filter(e => !e._parseError));
+    }
+
+    function renderLifelogTable(entries) {
+      const table = [
+        '<table>',
+        '<thead><tr><th>Time</th><th>Module</th><th>Status</th><th>Description</th></tr></thead>',
+        '<tbody>'
+      ];
+      for (const e of entries) {
+        table.push(`<tr><td>${e.timestamp || ''}</td><td>${e.module || ''}</td><td>${e.status || ''}</td><td>${e.description || ''}</td></tr>`);
+      }
+      table.push('</tbody></table>');
+      document.getElementById('lifelogTable').innerHTML = table.join('');
     }
 
     function makeCard(title, value) {
@@ -179,9 +223,9 @@
         const text = await res.text();
         allTasks = parseJsonl(text);
         applyFilters();
-        statusEl.textContent = '已载入任务文件：workspace/tasks/tasks.jsonl';
+        statusEl.textContent = '????????workspace/tasks/tasks.jsonl';
       } catch (e) {
-        statusEl.textContent = '无法自动读取任务文件，请确认通过本地服务器或允许 file 访问。';
+        statusEl.textContent = '??????????????????????? python -m http.server??';
       }
     }
 
@@ -201,11 +245,11 @@
         const text = await res.text();
         allLifelog = parseJsonl(text);
         applyFilters();
-        statusEl.textContent = `已载入 lifelog：${yyyy}-${mm}-${dd}`;
+        statusEl.textContent = `??? lifelog?${yyyy}-${mm}-${dd}`;
       } catch (e) {
         allLifelog = [];
         applyFilters();
-        statusEl.textContent = `未找到 lifelog：${yyyy}-${mm}-${dd}`;
+        statusEl.textContent = `??? lifelog?${yyyy}-${mm}-${dd}`;
       }
     }
 
@@ -219,6 +263,12 @@
       const date = new Date(dateInput.value + 'T00:00:00');
       await loadLifelogByDate(date);
     });
+
+    const notice = document.getElementById('corsNotice');
+    if (location.protocol === 'file:') {
+      notice.style.display = 'block';
+      notice.innerHTML = '??? file:// ???????????????????? workspace ?????????<br><code>python -m http.server 8000</code><br>???? <code>http://localhost:8000/tools/jsonl_viewer.html</code>?';
+    }
 
     const today = new Date();
     dateInput.value = today.toISOString().slice(0, 10);

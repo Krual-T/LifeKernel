@@ -14,9 +14,6 @@
     .list { display: grid; gap: 10px; }
     .muted { color: #666; font-size: 12px; }
     .error { color: #b00020; }
-    .ok { color: #1b5e20; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -60,28 +57,14 @@
       });
     }
 
-    function latestById(items) {
-      const map = new Map();
-      for (const it of items) {
-        if (!it || !it.id) continue;
-        map.set(it.id, it);
-      }
-      return Array.from(map.values());
-    }
-
     function renderTasks(tasks) {
-      const latest = latestById(tasks);
-      const pending = latest.filter(t => t.status !== 'done');
-      pending.sort((a, b) => {
-        const da = a.due_time || '';
-        const db = b.due_time || '';
-        return da.localeCompare(db);
-      });
-      const done = latest.filter(t => t.status === 'done');
+      const pending = tasks.filter(t => t.status !== 'done');
+      pending.sort((a, b) => (a.due_time || '').localeCompare(b.due_time || ''));
+      const done = tasks.filter(t => t.status === 'done');
 
       const summary = document.getElementById('taskSummary');
       summary.innerHTML = '';
-      summary.appendChild(makeCard('??', String(latest.length)));
+      summary.appendChild(makeCard('??', String(tasks.length)));
       summary.appendChild(makeCard('???', String(pending.length)));
       summary.appendChild(makeCard('???', String(done.length)));
 

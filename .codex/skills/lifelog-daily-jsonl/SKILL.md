@@ -1,4 +1,4 @@
-﻿﻿﻿---
+﻿---
 name: lifelog-daily-jsonl
 description: 维护按日期组织的 JSONL lifelog（workspace/lifelog/YYYY/MM/DD.jsonl）。用于初始化日志目录、追加操作记录或按日期/模块/状态/来源进行查询与汇总。
 ---

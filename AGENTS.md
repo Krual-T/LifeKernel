@@ -1,4 +1,4 @@
-﻿# LifeKernel｜Codex 执行规范（最新）
+# LifeKernel｜Codex 执行规范（最新）
 
 ## 1. 角色与边界
 1. 项目名称：**LifeKernel**；运行环境：**Windows + Codex CLI**。

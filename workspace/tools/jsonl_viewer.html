@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LifeKernel JSONL Viewer</title>
+  <title>LifeKernel Pulse</title>
   <style>
     :root {
       --bg: #f6f7fb;
@@ -38,7 +38,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>LifeKernel JSONL Viewer</h1>
+  <h1>LifeKernel Pulse</h1>
     <div class="muted">自动读取 workspace/tasks/tasks.jsonl 与当日 lifelog，支持日期与名称筛选。</div>
 
     <div id="corsNotice" class="section warn" style="display:none;"></div>
@@ -57,22 +57,37 @@
 
     <div class="section card">
       <h2>筛选</h2>
-      <div class="row">
-        <label>日期从：</label>
-        <input type="date" id="dateStart" />
-        <label>到：</label>
-        <input type="date" id="dateEnd" />
-        <label>名称/关键词：</label>
-        <input type="text" id="nameFilter" placeholder="任务标题或 lifelog 描述" />
-        <label>任务状态：</label>
-        <select id="taskStatus">
-          <option value="all">全部</option>
-          <option value="pending">未完成</option>
-          <option value="done">已完成</option>
-        </select>
-        <button id="applyFilter">应用筛选</button>
-      </div>
+    <div class="row">
+      <label>日期从：</label>
+      <input type="date" id="dateStart" />
+      <label>到：</label>
+      <input type="date" id="dateEnd" />
+      <label>名称/关键词：</label>
+      <input type="text" id="nameFilter" placeholder="任务标题或 lifelog 描述" />
+      <label>任务状态：</label>
+      <select id="taskStatus">
+        <option value="all">全部</option>
+        <option value="pending">未完成</option>
+        <option value="done">已完成</option>
+      </select>
+      <label>优先级：</label>
+      <select id="taskPriority">
+        <option value="all">全部</option>
+        <option value="low">low</option>
+        <option value="medium">medium</option>
+        <option value="high">high</option>
+      </select>
+      <label>模块：</label>
+      <select id="taskModule">
+        <option value="all">全部</option>
+        <option value="work">work</option>
+        <option value="personal">personal</option>
+        <option value="learning">learning</option>
+        <option value="health">health</option>
+      </select>
+      <button id="applyFilter">应用筛选</button>
     </div>
+  </div>
 
     <div id="status" class="section muted"></div>
 
@@ -84,10 +99,15 @@
         <div id="taskList" class="list"></div>
       </div>
       <div class="section">
-        <h3>任务表格（含已完成）</h3>
-        <div id="taskTable"></div>
+      <h3>任务表格（含已完成）</h3>
+      <div id="taskTable"></div>
+      <div class="row" style="margin-top:10px;">
+        <button id="prevPage">上一页</button>
+        <span id="pageInfo" class="muted"></span>
+        <button id="nextPage">下一页</button>
       </div>
     </div>
+  </div>
 
     <div class="section">
       <h2>Lifelog（表格）</h2>
@@ -122,6 +142,19 @@
       return true;
     }
 
+    let currentPage = 1;
+    const pageSize = 10;
+
+    function paginate(items) {
+      const total = items.length;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      document.getElementById('pageInfo').textContent = `第 ${currentPage} / ${totalPages} 页`;
+      return items.slice(start, end);
+    }
+
     function renderTasks(tasks) {
       const pending = tasks.filter(t => t.status !== 'done');
       pending.sort((a, b) => (a.due_time || '').localeCompare(b.due_time || ''));
@@ -150,7 +183,8 @@
         }
       }
 
-      renderTaskTable(tasks);
+      const paged = paginate(tasks);
+      renderTaskTable(paged);
     }
 
     function renderTaskTable(tasks) {
@@ -219,13 +253,17 @@
       const end = toDateOnly(document.getElementById('dateEnd').value);
       const name = (document.getElementById('nameFilter').value || '').trim().toLowerCase();
       const taskStatus = document.getElementById('taskStatus').value;
+      const taskPriority = document.getElementById('taskPriority').value;
+      const taskModule = document.getElementById('taskModule').value;
 
       const tasks = allTasks.filter(t => {
         const dateField = t.due_time || t.created_at || '';
         const inRange = inDateRange(dateField, start, end);
         const inName = !name || String(t.title || '').toLowerCase().includes(name);
         const inStatus = taskStatus === 'all' || t.status === taskStatus;
-        return inRange && inName && inStatus;
+        const inPriority = taskPriority === 'all' || t.priority === taskPriority;
+        const inModule = taskModule === 'all' || t.module === taskModule;
+        return inRange && inName && inStatus && inPriority && inModule;
       });
 
       const logs = allLifelog.filter(e => {
@@ -276,7 +314,10 @@
       }
     }
 
-    document.getElementById('applyFilter').addEventListener('click', applyFilters);
+    document.getElementById('applyFilter').addEventListener('click', () => {
+      currentPage = 1;
+      applyFilters();
+    });
 
     const dateInput = document.getElementById('lifelogDate');
     const btn = document.getElementById('loadLifelogBtn');
@@ -292,6 +333,23 @@
       notice.style.display = 'block';
       notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请在 workspace 目录启动本地服务：<br><code>python -m http.server 8000</code><br>然后打开 <code>http://localhost:8000/tools/jsonl_viewer.html</code>。';
     }
+
+    // Realtime filter
+    document.getElementById('nameFilter').addEventListener('input', () => { currentPage = 1; applyFilters(); });
+    document.getElementById('taskStatus').addEventListener('change', () => { currentPage = 1; applyFilters(); });
+    document.getElementById('taskPriority').addEventListener('change', () => { currentPage = 1; applyFilters(); });
+    document.getElementById('taskModule').addEventListener('change', () => { currentPage = 1; applyFilters(); });
+    document.getElementById('dateStart').addEventListener('change', () => { currentPage = 1; applyFilters(); });
+    document.getElementById('dateEnd').addEventListener('change', () => { currentPage = 1; applyFilters(); });
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      currentPage = Math.max(1, currentPage - 1);
+      applyFilters();
+    });
+    document.getElementById('nextPage').addEventListener('click', () => {
+      currentPage += 1;
+      applyFilters();
+    });
 
     const today = new Date();
     dateInput.value = today.toISOString().slice(0, 10);

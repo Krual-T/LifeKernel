@@ -46,7 +46,7 @@
 <body>
   <div class="container">
     <h1>LifeKernel Dashboard</h1>
-    <div class="muted">默认加载全部日期的任务与 lifelog。任务筛选与日志筛选完全独立。</div>
+    <div class="muted">默认加载任务与全部 lifelog（优先尝试目录列表）。任务筛选与日志筛选完全独立。</div>
 
     <div id="corsNotice" class="section warn" style="display:none;"></div>
 
@@ -318,18 +318,36 @@
       }
     }
 
+    async function tryListFilesFromDirectory() {
+      // Try to parse directory listing from server (e.g., Live Preview)
+      const res = await fetch('../lifelog/');
+      if (!res.ok) throw new Error('no directory listing');
+      const html = await res.text();
+      const hrefs = Array.from(html.matchAll(/href="([^"]+)"/g)).map(m => m[1]);
+      const files = hrefs.filter(h => h.endsWith('.jsonl')).map(h => h.replace(/^\\//, ''));
+      // If listing only shows year folders, skip here and fall back
+      return files.filter(f => f.split('/').length >= 3);
+    }
+
+    async function loadLifelogByFiles(files) {
+      const texts = await Promise.all(files.map(f => fetch(`../lifelog/${f}`).then(r => r.ok ? r.text() : '')));
+      allLifelog = texts.flatMap(t => t ? parseJsonl(t) : []);
+      applyLogFilters();
+      statusEl.textContent = `已载入全部 lifelog：${allLifelog.length} 条`;
+    }
+
     async function loadAllLifelog() {
       try {
-        const res = await fetch('../api/lifelog');
-        if (!res.ok) throw new Error('api failed');
-        const data = await res.json();
-        allLifelog = Array.isArray(data) ? data : [];
-        applyLogFilters();
-        statusEl.textContent = `已载入全部 lifelog：${allLifelog.length} 条`;
+        const files = await tryListFilesFromDirectory();
+        if (files.length > 0) {
+          await loadLifelogByFiles(files);
+          return;
+        }
+        throw new Error('no files from listing');
       } catch (e) {
         allLifelog = [];
         applyLogFilters();
-        statusEl.textContent = '无法读取 lifelog，请用本地服务启动 dashboard_server.py。';
+        statusEl.textContent = '无法自动获取 lifelog 列表，请使用日志日期范围筛选加载。';
       }
     }
 
@@ -347,9 +365,34 @@
     document.getElementById('taskModule').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
     document.getElementById('taskDateStart').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
     document.getElementById('taskDateEnd').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+    async function loadLifelogByRange(start, end) {
+      if (!start || !end) return;
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
+      const files = [];
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        files.push(`${yyyy}/${mm}/${dd}.jsonl`);
+      }
+      await loadLifelogByFiles(files);
+    }
+
     document.getElementById('logNameFilter').addEventListener('input', () => { applyLogFilters(); });
-    document.getElementById('logDateStart').addEventListener('change', () => { applyLogFilters(); });
-    document.getElementById('logDateEnd').addEventListener('change', () => { applyLogFilters(); });
+    document.getElementById('logDateStart').addEventListener('change', async () => {
+      const start = document.getElementById('logDateStart').value;
+      const end = document.getElementById('logDateEnd').value;
+      await loadLifelogByRange(start, end);
+      applyLogFilters();
+    });
+    document.getElementById('logDateEnd').addEventListener('change', async () => {
+      const start = document.getElementById('logDateStart').value;
+      const end = document.getElementById('logDateEnd').value;
+      await loadLifelogByRange(start, end);
+      applyLogFilters();
+    });
 
     document.getElementById('prevPage').addEventListener('click', () => {
       currentPage = Math.max(1, currentPage - 1);
@@ -363,7 +406,7 @@
     const notice = document.getElementById('corsNotice');
     if (location.protocol === 'file:') {
       notice.style.display = 'block';
-      notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请在 workspace 目录启动本地服务：<br><code>python workspace/tools/dashboard_server.py</code><br>然后打开 <code>http://localhost:8000/tools/jsonl_viewer.html</code>。';
+      notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请通过 Live Preview 或本地服务以 http:// 打开。';
     }
 
     loadTasks();

@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,36 +15,171 @@
       --border: #e5e7eb;
       --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
-    * { box-sizing: border-box; }
-    body { font-family: "Segoe UI", Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-    h1 { margin: 0 0 8px; }
-    h2 { margin: 16px 0 8px; }
-    h3 { margin: 12px 0 8px; }
-    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
-    .row.center { justify-content: center; }
-    .card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--card); box-shadow: var(--shadow); }
-    .section { margin-top: 20px; }
-    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef2ff; margin-right: 6px; font-size: 12px; color: #3730a3; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-done { background: #d1fae5; color: #065f46; }
-    .priority-low { background: #e5e7eb; color: #374151; }
-    .priority-medium { background: #dbeafe; color: #1e40af; }
-    .priority-high { background: #fee2e2; color: #991b1b; }
-    .list { display: grid; gap: 12px; }
-    .muted { color: var(--muted); font-size: 12px; }
-    .error { color: #b00020; }
-    input[type=date], input[type=text], select { padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; }
-    button { padding: 8px 12px; border: 0; border-radius: 8px; background: var(--primary); color: #fff; cursor: pointer; }
-    button:hover { filter: brightness(0.95); }
-    table { border-collapse: collapse; width: 100%; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
-    th, td { border-bottom: 1px solid var(--border); padding: 8px 10px; font-size: 12px; text-align: left; }
-    th { background: #f3f4f6; }
-    .warn { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; }
-    .loading { color: var(--muted); font-size: 12px; }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+    }
+
+    h2 {
+      margin: 16px 0 8px;
+    }
+
+    h3 {
+      margin: 12px 0 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .row.center {
+      justify-content: center;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .section {
+      margin-top: 20px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      margin-right: 6px;
+      font-size: 12px;
+      color: #3730a3;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-done {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .priority-low {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .priority-medium {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .priority-high {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .error {
+      color: #b00020;
+    }
+
+    input[type=date],
+    input[type=text],
+    select {
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(0.95);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 10px;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+    }
+
+    .warn {
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .loading {
+      color: var(--muted);
+      font-size: 12px;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>LifeKernel Dashboard</h1>
@@ -51,58 +187,44 @@
 
     <div id="corsNotice" class="section warn" style="display:none;"></div>
 
-    <div class="section card">
-      <h2>Task Filters</h2>
-      <div class="row center">
-        <label>From:</label>
-        <input type="date" id="taskDateStart" />
-        <label>To:</label>
-        <input type="date" id="taskDateEnd" />
-        <label>Title/Keyword:</label>
-        <input type="text" id="taskNameFilter" placeholder="Task title" />
-        <label>Status:</label>
-        <select id="taskStatus">
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="done">Done</option>
-        </select>
-        <label>Priority:</label>
-        <select id="taskPriority">
-          <option value="all">All</option>
-          <option value="low">low</option>
-          <option value="medium">medium</option>
-          <option value="high">high</option>
-        </select>
-        <label>Module:</label>
-        <select id="taskModule">
-          <option value="all">All</option>
-          <option value="work">work</option>
-          <option value="personal">personal</option>
-          <option value="learning">learning</option>
-          <option value="health">health</option>
-        </select>
-        <button id="applyTaskFilter">Apply Task Filters</button>
-      </div>
-    </div>
-
-    <div class="section card">
-      <h2>Log Filters</h2>
-      <div class="row center">
-        <label>From:</label>
-        <input type="date" id="logDateStart" />
-        <label>To:</label>
-        <input type="date" id="logDateEnd" />
-        <label>Keyword:</label>
-        <input type="text" id="logNameFilter" placeholder="Log description" />
-        <button id="applyLogFilter">Apply Log Filters</button>
-      </div>
-    </div>
-
     <div id="status" class="section muted"></div>
     <div id="logLoading" class="section loading" style="display:none;"></div>
 
     <div class="section">
       <h2>Tasks (filtered)</h2>
+      <div class="section card">
+        <h3>Task Filters</h3>
+        <div class="row center">
+          <label>From:</label>
+          <input type="date" id="taskDateStart" />
+          <label>To:</label>
+          <input type="date" id="taskDateEnd" />
+          <label>Title/Keyword:</label>
+          <input type="text" id="taskNameFilter" placeholder="Task title" />
+          <label>Status:</label>
+          <select id="taskStatus">
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="done">Done</option>
+          </select>
+          <label>Priority:</label>
+          <select id="taskPriority">
+            <option value="all">All</option>
+            <option value="low">low</option>
+            <option value="medium">medium</option>
+            <option value="high">high</option>
+          </select>
+          <label>Module:</label>
+          <select id="taskModule">
+            <option value="all">All</option>
+            <option value="work">work</option>
+            <option value="personal">personal</option>
+            <option value="learning">learning</option>
+            <option value="health">health</option>
+          </select>
+          <button id="applyTaskFilter">Apply Task Filters</button>
+        </div>
+      </div>
       <div id="taskSummary" class="row center"></div>
       <div class="section">
         <h3>Pending Tasks (cards)</h3>
@@ -121,6 +243,18 @@
 
     <div class="section">
       <h2>Logs (filtered)</h2>
+      <div class="section card">
+        <h3>Log Filters</h3>
+        <div class="row center">
+          <label>From:</label>
+          <input type="date" id="logDateStart" />
+          <label>To:</label>
+          <input type="date" id="logDateEnd" />
+          <label>Keyword:</label>
+          <input type="text" id="logNameFilter" placeholder="Log description" />
+          <button id="applyLogFilter">Apply Log Filters</button>
+        </div>
+      </div>
       <div id="lifelogTable"></div>
       <div class="section">
         <h3>Log Cards</h3>
@@ -565,4 +699,5 @@
     loadLifelogByRange(defaultStart, defaultEnd);
   </script>
 </body>
+
 </html>

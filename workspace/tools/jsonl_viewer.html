@@ -151,24 +151,51 @@
       gap: 12px;
     }
 
-    .filter-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
-      align-items: start;
+    .filter-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    .filter-grid label {
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .filter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .filter-field label {
       font-size: 12px;
       color: var(--muted);
     }
 
-    .filter-grid .field {
-      display: grid;
-      grid-template-columns: 90px 1fr;
-      gap: 8px;
-      align-items: center;
+    .filter-field input,
+    .filter-field select {
+      width: 100%;
       min-width: 0;
+    }
+
+    .filter-text {
+      flex: 2 1 320px;
+    }
+
+    .filter-date {
+      flex: 1 1 180px;
+    }
+
+    .filter-select {
+      flex: 0 1 160px;
+    }
+
+    .filter-quick {
+      flex: 0 1 auto;
     }
 
     .muted {
@@ -350,13 +377,15 @@
     .filter-actions {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
     }
 
     .filter-actions button {
       background: #e5e7eb;
       color: #111827;
+      padding: 4px 12px;
+      font-size: 12px;
       white-space: nowrap;
     }
 
@@ -549,53 +578,57 @@
         <div id="taskSummary" class="stat-bar"></div>
         <div class="section card">
           <h3>Filters</h3>
-          <div class="filter-grid">
-            <div class="field">
-              <label for="taskDateStart">From</label>
-              <input type="date" id="taskDateStart" />
-            </div>
-            <div class="field">
-              <label for="taskDateEnd">To</label>
-              <input type="date" id="taskDateEnd" />
-            </div>
-            <div class="field">
-              <label>Quick</label>
-              <div class="filter-actions">
-                <button type="button" data-task-range="today">Today</button>
-                <button type="button" data-task-range="7">Last 7 Days</button>
-                <button type="button" data-task-range="30">Last 30 Days</button>
+          <div class="filter-panel">
+            <div class="filter-row">
+              <div class="filter-field filter-text">
+                <label for="taskNameFilter">Title/Keyword</label>
+                <input type="text" id="taskNameFilter" placeholder="Task title" />
+              </div>
+              <div class="filter-field filter-date">
+                <label for="taskDateStart">From</label>
+                <input type="date" id="taskDateStart" />
+              </div>
+              <div class="filter-field filter-date">
+                <label for="taskDateEnd">To</label>
+                <input type="date" id="taskDateEnd" />
+              </div>
+              <div class="filter-field filter-quick">
+                <label>Quick</label>
+                <div class="filter-actions">
+                  <button type="button" data-task-range="today">Today</button>
+                  <button type="button" data-task-range="7">Last 7 Days</button>
+                  <button type="button" data-task-range="30">Last 30 Days</button>
+                </div>
               </div>
             </div>
-            <div class="field">
-              <label for="taskNameFilter">Title/Keyword</label>
-              <input type="text" id="taskNameFilter" placeholder="Task title" />
-            </div>
-            <div class="field">
-              <label for="taskStatus">Status</label>
-              <select id="taskStatus">
-                <option value="all">All</option>
-                <option value="pending">Pending</option>
-                <option value="done">Done</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="taskPriority">Priority</label>
-              <select id="taskPriority">
-                <option value="all">All</option>
-                <option value="low">low</option>
-                <option value="medium">medium</option>
-                <option value="high">high</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="taskModule">Module</label>
-              <select id="taskModule">
-                <option value="all">All</option>
-                <option value="work">work</option>
-                <option value="personal">personal</option>
-                <option value="learning">learning</option>
-                <option value="health">health</option>
-              </select>
+            <div class="filter-row">
+              <div class="filter-field filter-select">
+                <label for="taskStatus">Status</label>
+                <select id="taskStatus">
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="done">Done</option>
+                </select>
+              </div>
+              <div class="filter-field filter-select">
+                <label for="taskPriority">Priority</label>
+                <select id="taskPriority">
+                  <option value="all">All</option>
+                  <option value="low">low</option>
+                  <option value="medium">medium</option>
+                  <option value="high">high</option>
+                </select>
+              </div>
+              <div class="filter-field filter-select">
+                <label for="taskModule">Module</label>
+                <select id="taskModule">
+                  <option value="all">All</option>
+                  <option value="work">work</option>
+                  <option value="personal">personal</option>
+                  <option value="learning">learning</option>
+                  <option value="health">health</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -620,26 +653,28 @@
         <h2>Logs</h2>
         <div class="section card">
           <h3>Filters</h3>
-          <div class="filter-grid">
-            <div class="field">
-              <label for="logDateStart">From</label>
-              <input type="date" id="logDateStart" />
-            </div>
-            <div class="field">
-              <label for="logDateEnd">To</label>
-              <input type="date" id="logDateEnd" />
-            </div>
-            <div class="field">
-              <label>Quick</label>
-              <div class="filter-actions">
-                <button type="button" data-range="today">Today</button>
-                <button type="button" data-range="7">Last 7 Days</button>
-                <button type="button" data-range="30">Last 30 Days</button>
+          <div class="filter-panel">
+            <div class="filter-row">
+              <div class="filter-field filter-text">
+                <label for="logNameFilter">Keyword</label>
+                <input type="text" id="logNameFilter" placeholder="Log description" />
               </div>
-            </div>
-            <div class="field">
-              <label for="logNameFilter">Keyword</label>
-              <input type="text" id="logNameFilter" placeholder="Log description" />
+              <div class="filter-field filter-date">
+                <label for="logDateStart">From</label>
+                <input type="date" id="logDateStart" />
+              </div>
+              <div class="filter-field filter-date">
+                <label for="logDateEnd">To</label>
+                <input type="date" id="logDateEnd" />
+              </div>
+              <div class="filter-field filter-quick">
+                <label>Quick</label>
+                <div class="filter-actions">
+                  <button type="button" data-range="today">Today</button>
+                  <button type="button" data-range="7">Last 7 Days</button>
+                  <button type="button" data-range="30">Last 30 Days</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

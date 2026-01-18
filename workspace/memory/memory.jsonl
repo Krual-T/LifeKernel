@@ -6,3 +6,4 @@
 {"timestamp":"2026-01-17T23:24:05+08:00","note":"鐢ㄦ埛瀵煎笀濮撳悕涓烘垰鑽ｅ織","type":"person"}
 {"timestamp":"2026-01-17T23:35:23+08:00","note":"鐢ㄦ埛瑕佹眰浠ュ悗鎻愰啋浣跨敤绯荤粺绾цЕ鍙戯紙SYSTEM 璐︽埛杩愯锛夛紝閬垮厤瀵嗙爜渚濊禆","type":"preference"}
 
+{"timestamp":"2026-01-18T22:29:15.7970871+08:00","note":"Live Server 目录 listing 返回的链接可能包含完整前缀（如 /workspace/lifelog/2026 或 2026/01），且月份链接可能不带尾部斜杠，需做规范化后再解析","type":"knowledge"}

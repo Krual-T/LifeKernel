@@ -1104,49 +1104,67 @@
     async function tryListFilesFromDirectory() {
       const bases = getLifelogBases();
       for (const base of bases) {
+        console.debug('[lifelog] listing base', base);
         const res = await fetch(base);
+        console.debug('[lifelog] listing status', base, res.status);
         if (!res.ok) continue;
         const html = await res.text();
+        console.debug('[lifelog] listing html length', base, html.length);
         const hrefs = extractListingHrefs(html);
+        console.debug('[lifelog] listing hrefs raw', base, hrefs.length);
         const items = hrefs.map(normalizeListingHref).filter(Boolean);
+        console.debug('[lifelog] listing hrefs sample', base, items.slice(0, 10));
         const directFiles = items.filter(h => h.endsWith('.jsonl'));
         const yearDirs = items.map(h => normalizeDirToken(h, 4)).filter(Boolean);
+        console.debug('[lifelog] listing direct files', base, directFiles.length);
+        console.debug('[lifelog] listing year dirs', base, yearDirs.length);
         if (directFiles.length > 0) {
           const filtered = directFiles.filter(f => f.split('/').length >= 3);
+          console.debug('[lifelog] listing direct files filtered', base, filtered.length);
           if (filtered.length > 0) return { base, files: filtered };
         }
         if (yearDirs.length > 0) {
           const files = [];
           for (const year of yearDirs) {
+            console.debug('[lifelog] listing year', base, year);
             const yearRes = await fetch(`${base}${year}`);
+            console.debug('[lifelog] listing year status', base, year, yearRes.status);
             if (!yearRes.ok) continue;
             const yearHtml = await yearRes.text();
+            console.debug('[lifelog] listing year html length', base, year, yearHtml.length);
             const yearItems = extractListingHrefs(yearHtml).map(normalizeListingHref).filter(Boolean);
+            console.debug('[lifelog] listing year hrefs sample', base, year, yearItems.slice(0, 10));
             const monthDirs = yearItems.map(h => {
               let value = h;
               if (value.startsWith(year)) value = value.slice(year.length);
               if (value.startsWith('/')) value = value.slice(1);
               return normalizeDirToken(value, 2);
             }).filter(Boolean);
+            console.debug('[lifelog] listing month dirs', base, year, monthDirs.length);
             if (monthDirs.length === 0) {
               const yearFiles = yearItems.filter(h => h.endsWith('.jsonl'));
+              console.debug('[lifelog] listing year files', base, year, yearFiles.length);
               for (const file of yearFiles) {
                 const name = file.includes('/') ? file.split('/').pop() : file;
                 if (name) files.push(`${year}${name}`);
               }
             }
             for (const month of monthDirs) {
+              console.debug('[lifelog] listing month', base, year, month);
               const monthRes = await fetch(`${base}${year}${month}`);
+              console.debug('[lifelog] listing month status', base, year, month, monthRes.status);
               if (!monthRes.ok) continue;
               const monthHtml = await monthRes.text();
               const monthItems = extractListingHrefs(monthHtml).map(normalizeListingHref).filter(Boolean);
               const monthFiles = monthItems.filter(h => h.endsWith('.jsonl'));
+              console.debug('[lifelog] listing month files', base, year, month, monthFiles.length);
               for (const file of monthFiles) {
                 const name = file.includes('/') ? file.split('/').pop() : file;
                 if (name) files.push(`${year}${month}${name}`);
               }
             }
           }
+          console.debug('[lifelog] listing total files', base, files.length);
           if (files.length > 0) return { base, files };
         }
       }

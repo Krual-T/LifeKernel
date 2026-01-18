@@ -1136,7 +1136,12 @@
             console.debug('[lifelog] listing year html length', base, year, yearHtml.length);
             const yearItems = extractListingHrefs(yearHtml).map(normalizeListingHref).filter(Boolean);
             console.debug('[lifelog] listing year hrefs sample', base, year, yearItems.slice(0, 10));
-            const monthDirs = yearItems.map(h => normalizeDirToken(h, 2)).filter(Boolean);
+            const monthDirs = yearItems.map(h => {
+              let value = h;
+              if (value.startsWith(year)) value = value.slice(year.length);
+              if (value.startsWith('/')) value = value.slice(1);
+              return normalizeDirToken(value, 2);
+            }).filter(Boolean);
             console.debug('[lifelog] listing month dirs', base, year, monthDirs.length);
             if (monthDirs.length === 0) {
               const yearFiles = yearItems.filter(h => h.endsWith('.jsonl'));

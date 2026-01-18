@@ -131,7 +131,7 @@
 
   <script>
     function parseJsonl(text) {
-      return text.split(/\\r?\\n/).filter(Boolean).map(line => {
+      return text.split(/\r?\n/).filter(Boolean).map(line => {
         try { return JSON.parse(line); } catch (e) { return { _parseError: true, raw: line }; }
       });
     }
@@ -359,7 +359,7 @@
         const text = await res.text();
         allTasks = parseJsonl(text);
         applyTaskFilters();
-        statusEl.textContent = '已载入任务文件：workspace/tasks/tasks.jsonl';
+        statusEl.textContent = '已加载任务文件：workspace/tasks/tasks.jsonl';
       } catch (e) {
         statusEl.textContent = '无法自动读取任务文件，请确保 Live Preview 可访问该文件。';
       }
@@ -370,7 +370,7 @@
       if (!res.ok) throw new Error('no directory listing');
       const html = await res.text();
       const hrefs = Array.from(html.matchAll(/href="([^"]+)"/g)).map(m => m[1]);
-      const files = hrefs.filter(h => h.endsWith('.jsonl')).map(h => h.replace(/^\\//, ''));
+      const files = hrefs.filter(h => h.endsWith('.jsonl')).map(h => h.replace(/^\//, ''));
       return files.filter(f => f.split('/').length >= 3);
     }
 

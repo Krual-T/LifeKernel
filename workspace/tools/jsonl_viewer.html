@@ -327,6 +327,112 @@
       font-size: 12px;
     }
 
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-actions button {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .timeline {
+      position: relative;
+      margin-top: 12px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 86px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-date {
+      margin: 16px 0 8px;
+      font-weight: 700;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 70px 16px 1fr;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .timeline-time {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+      padding-top: 2px;
+    }
+
+    .timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 5px;
+      margin-left: 2px;
+    }
+
+    .timeline-card {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .timeline-meta {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .meta-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9ca3af;
+      display: inline-block;
+    }
+
+    .meta-dot.status-completed {
+      background: #10b981;
+    }
+
+    .meta-dot.status-failed {
+      background: #ef4444;
+    }
+
+    .meta-dot.status-pending {
+      background: #f59e0b;
+    }
+
+    .date-separator {
+      background: #f8fafc;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .log-paths {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-family: Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+    }
+
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #0f172a;
@@ -345,6 +451,16 @@
       .warn {
         background: #3b2f1a;
         border-color: #5a4527;
+      }
+
+      .filter-actions button {
+        background: #1f2937;
+        color: #e5e7eb;
+      }
+
+      .date-separator {
+        background: #0b1220;
+        color: #e5e7eb;
       }
     }
   </style>
@@ -455,6 +571,14 @@
               <label>&nbsp;</label>
               <button id="applyLogFilter">Apply Log Filters</button>
             </div>
+            <div class="field">
+              <label>Quick</label>
+              <div class="filter-actions">
+                <button type="button" data-range="today">Today</button>
+                <button type="button" data-range="7">Last 7 Days</button>
+                <button type="button" data-range="30">Last 30 Days</button>
+              </div>
+            </div>
           </div>
         </div>
         <div id="lifelogTable"></div>
@@ -550,6 +674,33 @@
       return extractDateOnly(d);
     }
 
+    function formatTimeShort(value) {
+      if (!value) return '';
+      if (typeof value === 'string') {
+        const match = value.match(/T(\\d{2}:\\d{2})/);
+        if (match) return match[1];
+      }
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '';
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+
+    function groupByDate(entries) {
+      const grouped = [];
+      let lastDate = null;
+      for (const e of entries) {
+        const date = formatDateShort(e.timestamp || '');
+        if (date && date !== lastDate) {
+          grouped.push({ _dateHeader: date });
+          lastDate = date;
+        }
+        grouped.push(e);
+      }
+      return grouped;
+    }
+
     function renderTasks(tasks) {
       const pending = tasks.filter(t => t.status !== 'done');
       pending.sort((a, b) => (a.due_time || '').localeCompare(b.due_time || ''));
@@ -605,22 +756,41 @@
       const list = document.getElementById('lifelogList');
       list.innerHTML = '';
       if (entries.length === 0) {
-        list.innerHTML = '<div class=\"muted\">No lifelog entries</div>';
+        list.innerHTML = '<div class=\"card muted\">No log entries found.</div>';
       } else {
-        for (const e of entries) {
-          const el = document.createElement('div');
-          el.className = 'card';
-          if (e._parseError) {
-            el.innerHTML = `<div class=\"error\">Parse error: ${e.raw}</div>`;
-          } else {
-            el.innerHTML = `
-              <div><strong class=\"mono\">${e.timestamp || ''}</strong> <span class=\"pill\">${e.module || 'work'}</span> <span class=\"pill\">${e.status || ''}</span></div>
-              <div>${e.description || ''}</div>
-              <div class=\"muted\">${(e.related_files || []).join(', ')}</div>
-            `;
+        const timeline = document.createElement('div');
+        timeline.className = 'timeline';
+        const grouped = groupByDate(entries.filter(e => !e._parseError));
+        for (const e of grouped) {
+          if (e._dateHeader) {
+            const header = document.createElement('div');
+            header.className = 'timeline-date';
+            header.textContent = e._dateHeader;
+            timeline.appendChild(header);
+            continue;
           }
-          list.appendChild(el);
+          const item = document.createElement('div');
+          item.className = 'timeline-item';
+          const status = String(e.status || 'completed').toLowerCase();
+          const statusClass = status === 'failed' ? 'status-failed' : (status === 'pending' ? 'status-pending' : 'status-completed');
+          const time = formatTimeShort(e.timestamp || '');
+          const files = (e.related_files || []).join(', ');
+          item.innerHTML = `
+            <div class=\"timeline-time mono\">${time || ''}</div>
+            <div class=\"timeline-dot\"></div>
+            <div class=\"timeline-card\">
+              <div>${e.description || ''}</div>
+              <div class=\"timeline-meta\">
+                <span class=\"meta-dot ${statusClass}\"></span>
+                <span>${e.module || 'work'}</span>
+                <span>${e.status || ''}</span>
+              </div>
+              ${files ? `<div class=\"log-paths\">${files}</div>` : ''}
+            </div>
+          `;
+          timeline.appendChild(item);
         }
+        list.appendChild(timeline);
       }
       renderLifelogTable(entries.filter(e => !e._parseError));
     }
@@ -628,12 +798,19 @@
     function renderLifelogTable(entries) {
       const table = [
         '<table>',
-        '<thead><tr><th>Time</th><th>Module</th><th>Status</th><th>Description</th></tr></thead>',
+        '<thead><tr><th class=\"table-col-date\">Time</th><th class=\"table-col-date\">Module</th><th class=\"table-col-date\">Status</th><th>Description</th></tr></thead>',
         '<tbody>'
       ];
-      for (const e of entries) {
+      const grouped = groupByDate(entries);
+      for (const e of grouped) {
+        if (e._dateHeader) {
+          table.push(`<tr class=\"date-separator\"><td colspan=\"4\">${e._dateHeader}</td></tr>`);
+          continue;
+        }
         const desc = e.description || e.raw || '';
-        table.push(`<tr><td><span class=\"mono\">${e.timestamp || ''}</span></td><td>${e.module || ''}</td><td>${e.status || ''}</td><td>${desc}</td></tr>`);
+        const files = (e.related_files || []).join(', ');
+        const time = formatTimeShort(e.timestamp || '');
+        table.push(`<tr><td><span class=\"mono\">${time}</span></td><td>${e.module || ''}</td><td>${e.status || ''}</td><td>${desc}${files ? `<div class=\"log-paths\">${files}</div>` : ''}</td></tr>`);
       }
       table.push('</tbody></table>');
       document.getElementById('lifelogTable').innerHTML = table.join('');
@@ -891,6 +1068,40 @@
         await loadLifelogByRange(start, end);
       }
       applyLogFilters();
+    });
+
+    function setLogRangeDays(days) {
+      const today = new Date();
+      const end = formatDateUTC(today);
+      const startDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+      if (days > 0) {
+        startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
+      }
+      const start = formatDateUTC(startDate);
+      const startInput = document.getElementById('logDateStart');
+      const endInput = document.getElementById('logDateEnd');
+      if (startInput) startInput.value = start;
+      if (endInput) endInput.value = end;
+    }
+
+    document.querySelectorAll('[data-range]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const val = btn.getAttribute('data-range');
+        if (val === 'today') {
+          setLogRangeDays(1);
+        } else {
+          const days = Number(val);
+          if (!Number.isNaN(days)) setLogRangeDays(days);
+        }
+        const start = document.getElementById('logDateStart').value || null;
+        const end = document.getElementById('logDateEnd').value || null;
+        if (start && end) {
+          lifelogRangeKey = `${start}..${end}`;
+          lifelogSource = 'range';
+          await loadLifelogByRange(start, end);
+        }
+        applyLogFilters();
+      });
     });
 
     document.getElementById('prevPage').addEventListener('click', () => {

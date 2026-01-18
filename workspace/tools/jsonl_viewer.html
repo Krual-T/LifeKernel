@@ -370,11 +370,12 @@
     .timeline::before {
       content: "";
       position: absolute;
-      left: 86px;
+      left: 89px;
       top: 0;
       bottom: 0;
       width: 2px;
       background: var(--border);
+      z-index: 0;
     }
 
     .timeline-date {
@@ -388,6 +389,12 @@
       gap: 12px;
       align-items: start;
       margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .timeline-item > :nth-child(3) {
+      min-width: 0;
     }
 
     .timeline-time {
@@ -403,7 +410,10 @@
       border-radius: 50%;
       background: var(--primary);
       margin-top: 5px;
-      margin-left: 2px;
+      margin-left: 3px;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 0 0 2px var(--bg);
     }
 
     .timeline-dot.module-work {
@@ -471,6 +481,8 @@
       margin-top: 6px;
       font-family: Consolas, "Courier New", monospace;
       white-space: pre-wrap;
+      word-break: break-all;
+      overflow-wrap: break-word;
     }
 
     @media (prefers-color-scheme: dark) {

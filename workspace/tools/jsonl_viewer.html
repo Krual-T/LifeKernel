@@ -1080,6 +1080,13 @@
       return Array.from(html.matchAll(/href=\"([^\"]+)\"/g)).map(m => m[1]);
     }
 
+    function normalizeDirToken(value, length) {
+      if (!value) return '';
+      const token = value.endsWith('/') ? value.slice(0, -1) : value;
+      if (token.length !== length) return '';
+      return `${token}/`;
+    }
+
     function getLifelogBases() {
       const path = location.pathname || '';
       const root = path.includes('/workspace/') ? '/workspace/' : '/';
@@ -1098,9 +1105,10 @@
         const hrefs = extractListingHrefs(html);
         console.debug('[lifelog] listing hrefs raw', base, hrefs.length);
         const items = hrefs.map(normalizeListingHref).filter(Boolean);
+        console.debug('[lifelog] listing hrefs sample', base, items.slice(0, 10));
         console.debug('[lifelog] listing hrefs normalized', base, items.length);
         const directFiles = items.filter(h => h.endsWith('.jsonl'));
-        const yearDirs = items.filter(h => /^\d{4}\/$/.test(h));
+        const yearDirs = items.map(h => normalizeDirToken(h, 4)).filter(Boolean);
         console.debug('[lifelog] listing direct files', base, directFiles.length);
         console.debug('[lifelog] listing year dirs', base, yearDirs.length);
         if (directFiles.length > 0) {
@@ -1117,7 +1125,7 @@
             if (!yearRes.ok) continue;
             const yearHtml = await yearRes.text();
             const yearItems = extractListingHrefs(yearHtml).map(normalizeListingHref).filter(Boolean);
-            const monthDirs = yearItems.filter(h => /^\d{2}\/$/.test(h));
+            const monthDirs = yearItems.map(h => normalizeDirToken(h, 2)).filter(Boolean);
             console.debug('[lifelog] listing month dirs', base, year, monthDirs.length);
             for (const month of monthDirs) {
               console.debug('[lifelog] listing month', base, year, month);

@@ -22,6 +22,7 @@
     .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 12px 0 18px; }
     .search { flex: 1 1 320px; }
     input[type=text] { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; }
+    .toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
     .list { display: grid; gap: 12px; }
     .card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--card); box-shadow: var(--shadow); }
     .title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
@@ -43,6 +44,7 @@
       <div class="search">
         <input id="searchInput" type="text" placeholder="搜索标题/标签/内容" />
       </div>
+      <label class="toggle"><input id="autoRefresh" type="checkbox" checked /> 自动刷新</label>
       <div id="status" class="muted"></div>
     </div>
 
@@ -95,15 +97,16 @@
           <div class="title">${item.title || '(未命名)'} </div>
           <div class="meta">
             <span class="mono">${formatDate(item.timestamp)}</span>
-            ${tags.map(t => `<span class=\"tag\">${t}</span>`).join('')}
+            ${tags.map(t => `<span class="tag">${t}</span>`).join('')}
           </div>
           <div class="kv">
-            ${item.problem ? `<div class=\"kv-row\"><div class=\"kv-key\">问题</div><div>${item.problem}</div></div>` : ''}
-            ${item.symptom ? `<div class=\"kv-row\"><div class=\"kv-key\">现象</div><div>${item.symptom}</div></div>` : ''}
-            ${item.root_cause ? `<div class=\"kv-row\"><div class=\"kv-key\">根因</div><div>${item.root_cause}</div></div>` : ''}
-            ${item.solution ? `<div class=\"kv-row\"><div class=\"kv-key\">解决方案</div><div>${item.solution}</div></div>` : ''}
-            ${item.environment ? `<div class=\"kv-row\"><div class=\"kv-key\">环境</div><div>${item.environment}</div></div>` : ''}
-            ${item.examples ? `<div class=\"kv-row\"><div class=\"kv-key\">示例</div><div>${toText(item.examples)}</div></div>` : ''}
+            ${item.problem ? `<div class="kv-row"><div class="kv-key">问题</div><div>${item.problem}</div></div>` : ''}
+            ${item.symptom ? `<div class="kv-row"><div class="kv-key">现象</div><div>${item.symptom}</div></div>` : ''}
+            ${item.root_cause ? `<div class="kv-row"><div class="kv-key">根因</div><div>${item.root_cause}</div></div>` : ''}
+            ${item.solution ? `<div class="kv-row"><div class="kv-key">解决方案</div><div>${item.solution}</div></div>` : ''}
+            ${item.environment ? `<div class="kv-row"><div class="kv-key">环境</div><div>${item.environment}</div></div>` : ''}
+            ${item.summary ? `<div class="kv-row"><div class="kv-key">摘要</div><div>${item.summary}</div></div>` : ''}
+            ${item.examples ? `<div class="kv-row"><div class="kv-key">示例</div><div>${toText(item.examples)}</div></div>` : ''}
           </div>
         `;
         el.appendChild(card);
@@ -111,6 +114,7 @@
     }
 
     let allItems = [];
+    let lastRaw = null;
 
     function applyFilter() {
       const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
@@ -128,14 +132,18 @@
     async function load() {
       const status = document.getElementById('status');
       try {
-        const res = await fetch(getKnowledgeBase());
+        const res = await fetch(getKnowledgeBase(), { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
+        if (text === lastRaw) {
+          return;
+        }
+        lastRaw = text;
         const items = parseJsonl(text).filter(i => !i._parseError);
         items.sort((a, b) => (Date.parse(b.timestamp || '') || 0) - (Date.parse(a.timestamp || '') || 0));
         allItems = items;
         status.textContent = `已加载 ${items.length} 条`;
-        render(items);
+        applyFilter();
       } catch (e) {
         status.textContent = '无法读取 knowledge.jsonl。请使用 Live Server。';
         render([]);
@@ -143,7 +151,18 @@
     }
 
     document.getElementById('searchInput').addEventListener('input', applyFilter);
+    document.getElementById('autoRefresh').addEventListener('change', () => {
+      if (document.getElementById('autoRefresh').checked) {
+        load();
+      }
+    });
+
     load();
+    setInterval(() => {
+      if (document.getElementById('autoRefresh').checked) {
+        load();
+      }
+    }, 10000);
   </script>
 </body>
 </html>

@@ -31,7 +31,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 1. **确定目标路径**
    - knowledge：`workspace/knowledge/knowledge.jsonl`
    - lifelog：`workspace/lifelog/YYYY/MM/DD.jsonl`
-   - memory：`workspace/memory/`（推荐 JSONL 或按日 Markdown）
+   - memory：`workspace/memory/memory.jsonl`
    - tasks：`workspace/tasks/tasks.jsonl`
 2. **生成记录对象**
    - 统一字段建议：`id`、`timestamp`、`source`、`module`、`related_files`
@@ -43,6 +43,22 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 5. **必要时更新可视化**
    - knowledge：`workspace/tools/knowledge_viewer.html`
    - lifelog/tasks：`workspace/tools/jsonl_viewer.html`
+
+## 脚本（推荐）
+
+- `scripts/record_jsonl.py`
+  - 统一写入 knowledge/lifelog/memory/tasks
+  - knowledge 默认 auto record 到 lifelog
+
+示例：
+
+```powershell
+python .\.codex\skills\record-jsonl-unified\scripts\record_jsonl.py --record-type knowledge --title "Live Preview 目录列表返回反斜杠" --solution "对 href 做 decodeURIComponent 并将 \\ 替换为 /" --tags "lifelog,live-preview" --module work --source conversation
+```
+
+```powershell
+python .\.codex\skills\record-jsonl-unified\scripts\record_jsonl.py --record-type lifelog --description "整理归档索引" --module work --source conversation --status completed --related-file docs/skills_archive/ARCHIVE_LOG.md
+```
 
 ## 字段规范（通用）
 

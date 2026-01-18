@@ -986,6 +986,7 @@
     let lifelogRangeKey = null;
     let lifelogSource = null;
     let lifelogBase = null;
+    let lifelogFileIndex = null;
 
     function setLogLoading(isLoading, message) {
       if (logLoadingEl) {
@@ -1082,6 +1083,19 @@
       throw new Error('no directory listing');
     }
 
+    async function getLifelogFileIndex() {
+      if (Array.isArray(lifelogFileIndex)) return lifelogFileIndex;
+      try {
+        const result = await tryListFilesFromDirectory();
+        lifelogBase = result.base;
+        lifelogFileIndex = result.files || [];
+        return lifelogFileIndex;
+      } catch (e) {
+        lifelogFileIndex = null;
+        return null;
+      }
+    }
+
     async function loadLifelogByFiles(files, base) {
       const baseDir = base || lifelogBase || '../lifelog/';
       if (!files || files.length === 0) {
@@ -1135,6 +1149,13 @@
       for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
         files.push(`${formatDateUTC(d).replace(/-/g, '/')}.jsonl`);
       }
+      const index = await getLifelogFileIndex();
+      if (index && index.length) {
+        const set = new Set(index);
+        const filtered = files.filter(f => set.has(f));
+        await loadLifelogByFiles(filtered, lifelogBase || await resolveLifelogBaseByProbe(files[0]));
+        return;
+      }
       const base = lifelogBase || await resolveLifelogBaseByProbe(files[0]);
       lifelogBase = base;
       await loadLifelogByFiles(files, base);
@@ -1142,10 +1163,9 @@
 
     async function loadAllLifelog() {
       try {
-        const result = await tryListFilesFromDirectory();
-        if (result.files.length > 0) {
-          lifelogBase = result.base;
-          await loadLifelogByFiles(result.files, result.base);
+        const files = await getLifelogFileIndex();
+        if (files && files.length > 0) {
+          await loadLifelogByFiles(files, lifelogBase);
           lifelogSource = 'listing';
           lifelogRangeKey = null;
           return;

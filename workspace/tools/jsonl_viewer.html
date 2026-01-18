@@ -168,6 +168,10 @@
       gap: 6px;
     }
 
+    .filter-grid button {
+      width: 100%;
+    }
+
     .muted {
       color: var(--muted);
       font-size: 12px;
@@ -209,10 +213,35 @@
       color: var(--muted);
     }
 
+    .stat-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card .value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .stat-accent-pending {
+      color: #f59e0b;
+    }
+
+    .stat-accent-done {
+      color: #10b981;
+    }
+
     input[type=date],
     input[type=text],
     select {
-      padding: 6px 8px;
+      padding: 8px 10px;
       border: 1px solid var(--border);
       border-radius: 8px;
     }
@@ -263,6 +292,27 @@
 
     tbody tr:hover {
       background: rgba(59, 130, 246, 0.12);
+    }
+
+    .table-col-id {
+      width: 140px;
+    }
+
+    .table-col-title {
+      width: 40%;
+    }
+
+    .table-col-date {
+      width: 110px;
+    }
+
+    .truncate {
+      display: inline-block;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: bottom;
     }
 
     .warn {
@@ -317,9 +367,10 @@
 
     <div id="tab-tasks" class="tab-panel active" role="tabpanel">
       <div class="section">
-        <h2>Tasks (filtered)</h2>
+        <h2>Tasks</h2>
+        <div id="taskSummary" class="stat-bar"></div>
         <div class="section card">
-          <h3>Task Filters</h3>
+          <h3>Filters</h3>
           <div class="filter-grid">
             <div class="field">
               <label for="taskDateStart">From</label>
@@ -366,13 +417,12 @@
             </div>
           </div>
         </div>
-        <div id="taskSummary" class="row center"></div>
         <div class="section">
-          <h3>Pending Tasks (cards)</h3>
+          <h3>To-Do</h3>
           <div id="taskList" class="list"></div>
         </div>
         <div class="section">
-          <h3>Task Table (includes done)</h3>
+          <h3>All History</h3>
           <div id="taskTable"></div>
           <div class="row center" style="margin-top:10px;">
             <button id="prevPage">Prev</button>
@@ -385,9 +435,9 @@
 
     <div id="tab-logs" class="tab-panel" role="tabpanel">
       <div class="section">
-        <h2>Logs (filtered)</h2>
+        <h2>Logs</h2>
         <div class="section card">
-          <h3>Log Filters</h3>
+          <h3>Filters</h3>
           <div class="filter-grid">
             <div class="field">
               <label for="logDateStart">From</label>
@@ -489,6 +539,17 @@
       return items.slice(start, end);
     }
 
+    function formatDateShort(value) {
+      if (!value) return '';
+      if (typeof value === 'string') {
+        const datePart = value.split('T')[0];
+        return datePart || value;
+      }
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '';
+      return extractDateOnly(d);
+    }
+
     function renderTasks(tasks) {
       const pending = tasks.filter(t => t.status !== 'done');
       pending.sort((a, b) => (a.due_time || '').localeCompare(b.due_time || ''));
@@ -496,14 +557,14 @@
 
       const summary = document.getElementById('taskSummary');
       summary.innerHTML = '';
-      summary.appendChild(makeCard('Total', String(tasks.length)));
-      summary.appendChild(makeCard('Pending', String(pending.length)));
-      summary.appendChild(makeCard('Done', String(done.length)));
+      summary.appendChild(makeStatCard('Total', String(tasks.length), ''));
+      summary.appendChild(makeStatCard('Pending', String(pending.length), 'stat-accent-pending'));
+      summary.appendChild(makeStatCard('Done', String(done.length), 'stat-accent-done'));
 
       const list = document.getElementById('taskList');
       list.innerHTML = '';
       if (pending.length === 0) {
-        list.innerHTML = '<div class=\"muted\">No pending tasks</div>';
+        list.innerHTML = '<div class=\"card muted\">All caught up!</div>';
       } else {
         for (const t of pending) {
           const el = document.createElement('div');
@@ -514,7 +575,7 @@
             <div class=\"task-title\">${t.title || ''}</div>
             <div class=\"task-meta\">
               <span class=\"pill\">${t.module || 'work'}</span>
-              <span>Status ${statusBadge(t.status)} | Priority ${priorityBadge(t.priority)} | Due <span class=\"mono\">${t.due_time || '-'}</span></span>
+              <span>Status ${statusBadge(t.status)} | Priority ${priorityBadge(t.priority)} | Due <span class=\"mono\">${formatDateShort(t.due_time) || '-'}</span></span>
             </div>
             <div>${t.details || ''}</div>
           `;
@@ -529,11 +590,12 @@
     function renderTaskTable(tasks) {
       const table = [
         '<table>',
-        '<thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Priority</th><th>Module</th><th>Created</th><th>Completed</th><th>Due</th></tr></thead>',
+        '<thead><tr><th class=\"table-col-id\">ID</th><th class=\"table-col-title\">Title</th><th>Status</th><th>Priority</th><th>Module</th><th class=\"table-col-date\">Created</th><th class=\"table-col-date\">Completed</th><th class=\"table-col-date\">Due</th></tr></thead>',
         '<tbody>'
       ];
       for (const t of tasks) {
-        table.push(`<tr><td><span class=\"mono\">${t.id || ''}</span></td><td>${t.title || ''}</td><td>${statusBadge(t.status)}</td><td>${priorityBadge(t.priority)}</td><td>${t.module || ''}</td><td><span class=\"mono\">${t.created_at || ''}</span></td><td><span class=\"mono\">${t.completed_at || ''}</span></td><td><span class=\"mono\">${t.due_time || ''}</span></td></tr>`);
+        const idText = t.id || '';
+        table.push(`<tr><td><span class=\"mono truncate\" title=\"${idText}\">${idText}</span></td><td>${t.title || ''}</td><td>${statusBadge(t.status)}</td><td>${priorityBadge(t.priority)}</td><td>${t.module || ''}</td><td><span class=\"mono\">${formatDateShort(t.created_at)}</span></td><td><span class=\"mono\">${formatDateShort(t.completed_at)}</span></td><td><span class=\"mono\">${formatDateShort(t.due_time)}</span></td></tr>`);
       }
       table.push('</tbody></table>');
       document.getElementById('taskTable').innerHTML = table.join('');
@@ -581,6 +643,14 @@
       const el = document.createElement('div');
       el.className = 'card';
       el.innerHTML = `<div class=\"muted\">${title}</div><div style=\"font-size:20px;\">${value}</div>`;
+      return el;
+    }
+
+    function makeStatCard(title, value, accentClass) {
+      const el = document.createElement('div');
+      el.className = 'card stat-card';
+      const accent = accentClass ? ` ${accentClass}` : '';
+      el.innerHTML = `<div class=\"label\">${title}</div><div class=\"value${accent}\">${value}</div>`;
       return el;
     }
 

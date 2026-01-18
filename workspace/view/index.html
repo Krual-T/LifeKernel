@@ -677,8 +677,12 @@
       for (const panel of panels) {
         const src = panel.getAttribute('data-src');
         if (!src) continue;
-        const res = await fetch(src);
-        panel.innerHTML = res.ok ? await res.text() : '<div class="warn">Failed to load tab content.</div>';
+        try {
+          const res = await fetch(src);
+          panel.innerHTML = res.ok ? await res.text() : '<div class="warn">Failed to load tab content.</div>';
+        } catch (e) {
+          panel.innerHTML = '<div class="warn">Failed to load tab content. Use Live Server.</div>';
+        }
       }
     }
 
@@ -1402,47 +1406,45 @@
       const logQuickButtons = Array.from(document.querySelectorAll('[data-range]'));
       const taskQuickButtons = Array.from(document.querySelectorAll('[data-task-range]'));
 
-      document.getElementById('taskNameFilter').addEventListener('input', debouncedTaskFilter);
-      document.getElementById('taskStatus').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
-      document.getElementById('taskPriority').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
-      document.getElementById('taskModule').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
-      document.getElementById('taskDateStart').addEventListener('change', () => { clearActiveButtons(taskQuickButtons); currentPage = 1; applyTaskFilters(); });
-      document.getElementById('taskDateEnd').addEventListener('change', () => { clearActiveButtons(taskQuickButtons); currentPage = 1; applyTaskFilters(); });
+      const taskNameFilter = document.getElementById('taskNameFilter');
+      if (taskNameFilter) {
+        taskNameFilter.addEventListener('input', debouncedTaskFilter);
+        document.getElementById('taskStatus')?.addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+        document.getElementById('taskPriority')?.addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+        document.getElementById('taskModule')?.addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+        document.getElementById('taskDateStart')?.addEventListener('change', () => { clearActiveButtons(taskQuickButtons); currentPage = 1; applyTaskFilters(); });
+        document.getElementById('taskDateEnd')?.addEventListener('change', () => { clearActiveButtons(taskQuickButtons); currentPage = 1; applyTaskFilters(); });
 
-      document.getElementById('logNameFilter').addEventListener('input', debouncedLogFilter);
-      document.getElementById('logDateStart').addEventListener('change', async () => {
-        clearActiveButtons(logQuickButtons);
-        const start = document.getElementById('logDateStart').value || null;
-        const end = document.getElementById('logDateEnd').value || null;
-        if (start && end) {
-          lifelogRangeKey = `${start}..${end}`;
-          lifelogSource = 'range';
-          await loadLifelogByRange(start, end);
-        }
-        applyLogFilters();
-      });
-      document.getElementById('logDateEnd').addEventListener('change', async () => {
-        clearActiveButtons(logQuickButtons);
-        const start = document.getElementById('logDateStart').value || null;
-        const end = document.getElementById('logDateEnd').value || null;
-        if (start && end) {
-          lifelogRangeKey = `${start}..${end}`;
-          lifelogSource = 'range';
-          await loadLifelogByRange(start, end);
-        }
-        applyLogFilters();
-      });
+        taskQuickButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            setActiveButton(taskQuickButtons, btn);
+            const val = btn.getAttribute('data-task-range');
+            if (val === 'today') {
+              setTaskRangeDays(1);
+            } else {
+              const days = Number(val);
+              if (!Number.isNaN(days)) setTaskRangeDays(days);
+            }
+            currentPage = 1;
+            applyTaskFilters();
+          });
+        });
 
-      logQuickButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
-          setActiveButton(logQuickButtons, btn);
-          const val = btn.getAttribute('data-range');
-          if (val === 'today') {
-            setLogRangeDays(1);
-          } else {
-            const days = Number(val);
-            if (!Number.isNaN(days)) setLogRangeDays(days);
-          }
+        document.getElementById('prevPage')?.addEventListener('click', () => {
+          currentPage = Math.max(1, currentPage - 1);
+          applyTaskFilters();
+        });
+        document.getElementById('nextPage')?.addEventListener('click', () => {
+          currentPage += 1;
+          applyTaskFilters();
+        });
+      }
+
+      const logNameFilter = document.getElementById('logNameFilter');
+      if (logNameFilter) {
+        logNameFilter.addEventListener('input', debouncedLogFilter);
+        document.getElementById('logDateStart')?.addEventListener('change', async () => {
+          clearActiveButtons(logQuickButtons);
           const start = document.getElementById('logDateStart').value || null;
           const end = document.getElementById('logDateEnd').value || null;
           if (start && end) {
@@ -1452,62 +1454,75 @@
           }
           applyLogFilters();
         });
-      });
-
-      taskQuickButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          setActiveButton(taskQuickButtons, btn);
-          const val = btn.getAttribute('data-task-range');
-          if (val === 'today') {
-            setTaskRangeDays(1);
-          } else {
-            const days = Number(val);
-            if (!Number.isNaN(days)) setTaskRangeDays(days);
+        document.getElementById('logDateEnd')?.addEventListener('change', async () => {
+          clearActiveButtons(logQuickButtons);
+          const start = document.getElementById('logDateStart').value || null;
+          const end = document.getElementById('logDateEnd').value || null;
+          if (start && end) {
+            lifelogRangeKey = `${start}..${end}`;
+            lifelogSource = 'range';
+            await loadLifelogByRange(start, end);
           }
-          currentPage = 1;
-          applyTaskFilters();
+          applyLogFilters();
         });
-      });
 
-      document.getElementById('prevPage').addEventListener('click', () => {
-        currentPage = Math.max(1, currentPage - 1);
-        applyTaskFilters();
-      });
-      document.getElementById('nextPage').addEventListener('click', () => {
-        currentPage += 1;
-        applyTaskFilters();
-      });
+        logQuickButtons.forEach(btn => {
+          btn.addEventListener('click', async () => {
+            setActiveButton(logQuickButtons, btn);
+            const val = btn.getAttribute('data-range');
+            if (val === 'today') {
+              setLogRangeDays(1);
+            } else {
+              const days = Number(val);
+              if (!Number.isNaN(days)) setLogRangeDays(days);
+            }
+            const start = document.getElementById('logDateStart').value || null;
+            const end = document.getElementById('logDateEnd').value || null;
+            if (start && end) {
+              lifelogRangeKey = `${start}..${end}`;
+              lifelogSource = 'range';
+              await loadLifelogByRange(start, end);
+            }
+            applyLogFilters();
+          });
+        });
+      }
 
       const viewButtons = Array.from(document.querySelectorAll('.view-button'));
-      const lifelogTablePanel = document.getElementById('lifelogTablePanel');
-      const lifelogListPanel = document.getElementById('lifelogListPanel');
-      function setLifelogView(view) {
-        viewButtons.forEach(btn => {
-          const isActive = btn.dataset.view === view;
-          btn.classList.toggle('active', isActive);
-          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-        });
-        if (lifelogTablePanel) lifelogTablePanel.style.display = view === 'table' ? 'block' : 'none';
-        if (lifelogListPanel) lifelogListPanel.style.display = view === 'timeline' ? 'block' : 'none';
-      }
-      viewButtons.forEach(btn => {
-        btn.addEventListener('click', () => setLifelogView(btn.dataset.view));
-      });
-      setLifelogView('timeline');
-
-      document.getElementById('knowledgeSearch').addEventListener('input', applyKnowledgeFilters);
-      document.getElementById('knowledgeRefresh').addEventListener('click', loadKnowledge);
-      document.getElementById('knowledgeAutoRefresh').addEventListener('change', () => {
-        if (document.getElementById('knowledgeAutoRefresh').checked) {
-          loadKnowledge();
+      if (viewButtons.length) {
+        const lifelogTablePanel = document.getElementById('lifelogTablePanel');
+        const lifelogListPanel = document.getElementById('lifelogListPanel');
+        function setLifelogView(view) {
+          viewButtons.forEach(btn => {
+            const isActive = btn.dataset.view === view;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+          });
+          if (lifelogTablePanel) lifelogTablePanel.style.display = view === 'table' ? 'block' : 'none';
+          if (lifelogListPanel) lifelogListPanel.style.display = view === 'timeline' ? 'block' : 'none';
         }
-      });
+        viewButtons.forEach(btn => {
+          btn.addEventListener('click', () => setLifelogView(btn.dataset.view));
+        });
+        setLifelogView('timeline');
+      }
 
-      if (knowledgeTimer) clearInterval(knowledgeTimer);
-      knowledgeTimer = setInterval(() => {
-        const checkbox = document.getElementById('knowledgeAutoRefresh');
-        if (checkbox && checkbox.checked) loadKnowledge();
-      }, 10000);
+      const knowledgeSearch = document.getElementById('knowledgeSearch');
+      if (knowledgeSearch) {
+        knowledgeSearch.addEventListener('input', applyKnowledgeFilters);
+        document.getElementById('knowledgeRefresh')?.addEventListener('click', loadKnowledge);
+        document.getElementById('knowledgeAutoRefresh')?.addEventListener('change', () => {
+          if (document.getElementById('knowledgeAutoRefresh').checked) {
+            loadKnowledge();
+          }
+        });
+
+        if (knowledgeTimer) clearInterval(knowledgeTimer);
+        knowledgeTimer = setInterval(() => {
+          const checkbox = document.getElementById('knowledgeAutoRefresh');
+          if (checkbox && checkbox.checked) loadKnowledge();
+        }, 10000);
+      }
 
       const notice = document.getElementById('corsNotice');
       if (location.protocol === 'file:') {

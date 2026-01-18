@@ -389,6 +389,43 @@
       white-space: nowrap;
     }
 
+    .filter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .view-switch {
+      display: inline-flex;
+      gap: 0;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .view-switch button {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .view-switch button.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .view-panel {
+      margin-top: 16px;
+    }
+
     .filter-actions button.active {
       background: var(--primary);
       color: #fff;
@@ -652,7 +689,13 @@
       <div class="section">
         <h2>Logs</h2>
         <div class="section card">
-          <h3>Filters</h3>
+          <div class="filter-header">
+            <h3>Filters</h3>
+            <div class="view-switch" role="group" aria-label="Log view">
+              <button type="button" class="view-button active" data-view="timeline">Timeline</button>
+              <button type="button" class="view-button" data-view="table">List</button>
+            </div>
+          </div>
           <div class="filter-panel">
             <div class="filter-row">
               <div class="filter-field filter-text">
@@ -678,9 +721,10 @@
             </div>
           </div>
         </div>
-        <div id="lifelogTable"></div>
-        <div class="section">
-          <h3>Log Cards</h3>
+        <div id="lifelogTablePanel" class="section view-panel">
+          <div id="lifelogTable"></div>
+        </div>
+        <div id="lifelogListPanel" class="section view-panel">
           <div id="lifelogList" class="list"></div>
         </div>
       </div>
@@ -985,6 +1029,11 @@
         const inName = !name || String(e.description || '').toLowerCase().includes(name);
         return inRange && inName;
       });
+      logs.sort((a, b) => {
+        const ta = Date.parse(a.timestamp || '') || 0;
+        const tb = Date.parse(b.timestamp || '') || 0;
+        return tb - ta;
+      });
 
       renderLifelog(logs);
     }
@@ -1277,6 +1326,25 @@
     tabButtons.forEach(btn => {
       btn.addEventListener('click', () => activateTab(btn.dataset.tab));
     });
+
+    let lifelogView = 'timeline';
+    const viewButtons = Array.from(document.querySelectorAll('.view-button'));
+    const lifelogTablePanel = document.getElementById('lifelogTablePanel');
+    const lifelogListPanel = document.getElementById('lifelogListPanel');
+    function setLifelogView(view) {
+      lifelogView = view;
+      viewButtons.forEach(btn => {
+        const isActive = btn.dataset.view === view;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+      if (lifelogTablePanel) lifelogTablePanel.style.display = view === 'table' ? 'block' : 'none';
+      if (lifelogListPanel) lifelogListPanel.style.display = view === 'timeline' ? 'block' : 'none';
+    }
+    viewButtons.forEach(btn => {
+      btn.addEventListener('click', () => setLifelogView(btn.dataset.view));
+    });
+    setLifelogView('timeline');
 
     const notice = document.getElementById('corsNotice');
     if (location.protocol === 'file:') {

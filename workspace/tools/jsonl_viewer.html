@@ -154,8 +154,8 @@
     .filter-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      align-items: end;
+      gap: 10px;
+      align-items: center;
     }
 
     .filter-grid label {
@@ -165,11 +165,9 @@
 
     .filter-grid .field {
       display: grid;
-      gap: 6px;
-    }
-
-    .filter-grid button {
-      width: 100%;
+      grid-template-columns: 90px 1fr;
+      gap: 8px;
+      align-items: center;
     }
 
     .muted {
@@ -238,12 +236,33 @@
       color: #10b981;
     }
 
+    .stat-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      margin-right: 8px;
+    }
+
+    .stat-icon.pending {
+      background: #fde68a;
+    }
+
+    .stat-icon.done {
+      background: #a7f3d0;
+    }
+
     input[type=date],
     input[type=text],
     select {
       padding: 8px 10px;
       border: 1px solid var(--border);
       border-radius: 8px;
+      background: var(--card);
+      color: var(--text);
     }
 
     button {
@@ -339,6 +358,10 @@
       color: #111827;
     }
 
+    .filter-actions button.active {
+      background: var(--primary);
+      color: #fff;
+    }
     .timeline {
       position: relative;
       margin-top: 12px;
@@ -368,7 +391,7 @@
     }
 
     .timeline-time {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       text-align: right;
       padding-top: 2px;
@@ -381,6 +404,22 @@
       background: var(--primary);
       margin-top: 5px;
       margin-left: 2px;
+    }
+
+    .timeline-dot.module-work {
+      background: #3b82f6;
+    }
+
+    .timeline-dot.module-personal {
+      background: #f97316;
+    }
+
+    .timeline-dot.module-learning {
+      background: #8b5cf6;
+    }
+
+    .timeline-dot.module-health {
+      background: #10b981;
     }
 
     .timeline-card {
@@ -454,6 +493,14 @@
         border-color: #5a4527;
       }
 
+      input[type=date],
+      input[type=text],
+      select {
+        background: #0b1220;
+        color: #e5e7eb;
+        border-color: #1f2937;
+      }
+
       .filter-actions button {
         background: #1f2937;
         color: #e5e7eb;
@@ -498,6 +545,14 @@
               <input type="date" id="taskDateEnd" />
             </div>
             <div class="field">
+              <label>Quick</label>
+              <div class="filter-actions">
+                <button type="button" data-task-range="today">Today</button>
+                <button type="button" data-task-range="7">Last 7 Days</button>
+                <button type="button" data-task-range="30">Last 30 Days</button>
+              </div>
+            </div>
+            <div class="field">
               <label for="taskNameFilter">Title/Keyword</label>
               <input type="text" id="taskNameFilter" placeholder="Task title" />
             </div>
@@ -527,10 +582,6 @@
                 <option value="learning">learning</option>
                 <option value="health">health</option>
               </select>
-            </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button id="applyTaskFilter">Apply Task Filters</button>
             </div>
           </div>
         </div>
@@ -575,10 +626,6 @@
             <div class="field">
               <label for="logNameFilter">Keyword</label>
               <input type="text" id="logNameFilter" placeholder="Log description" />
-            </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button id="applyLogFilter">Apply Log Filters</button>
             </div>
           </div>
         </div>
@@ -776,9 +823,11 @@
           const statusClass = status === 'failed' ? 'status-failed' : (status === 'pending' ? 'status-pending' : 'status-completed');
           const time = formatTimeShort(e.timestamp || '');
           const files = (e.related_files || []).join(', ');
+          const module = String(e.module || 'work').toLowerCase();
+          const moduleClass = `module-${module}`;
           item.innerHTML = `
             <div class=\"timeline-time mono\">${time || ''}</div>
-            <div class=\"timeline-dot\"></div>
+            <div class=\"timeline-dot ${moduleClass}\"></div>
             <div class=\"timeline-card\">
               <div>${e.description || ''}</div>
               <div class=\"timeline-meta\">
@@ -831,13 +880,13 @@
       const el = document.createElement('div');
       el.className = 'card stat-card';
       const accent = accentClass ? ` ${accentClass}` : '';
-      el.innerHTML = `<div class=\"label\">${title}</div><div class=\"value${accent}\">${value}</div>`;
+      const iconClass = title.toLowerCase().includes('pending') ? 'pending' : (title.toLowerCase().includes('done') ? 'done' : '');
+      el.innerHTML = `<div class=\"label\"><span class=\"stat-icon ${iconClass}\"></span>${title}</div><div class=\"value${accent}\">${value}</div>`;
       return el;
     }
 
     const statusEl = document.getElementById('status');
     const logLoadingEl = document.getElementById('logLoading');
-    const applyLogButton = document.getElementById('applyLogFilter');
     let allTasks = [];
     let allLifelog = [];
     let lifelogRangeKey = null;
@@ -848,11 +897,6 @@
       if (logLoadingEl) {
         logLoadingEl.style.display = isLoading ? 'block' : 'none';
         logLoadingEl.textContent = message || '';
-      }
-      if (applyLogButton) {
-        applyLogButton.disabled = isLoading;
-        applyLogButton.style.opacity = isLoading ? '0.6' : '';
-        applyLogButton.style.cursor = isLoading ? 'not-allowed' : '';
       }
       const startInput = document.getElementById('logDateStart');
       const endInput = document.getElementById('logDateEnd');
@@ -1034,26 +1078,44 @@
       }
     }
 
-    document.getElementById('applyTaskFilter').addEventListener('click', () => {
+    function debounce(fn, delay) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    function setActiveButton(buttons, active) {
+      buttons.forEach(btn => btn.classList.toggle('active', btn === active));
+    }
+
+    function clearActiveButtons(buttons) {
+      buttons.forEach(btn => btn.classList.remove('active'));
+    }
+
+    const debouncedTaskFilter = debounce(() => {
       currentPage = 1;
       applyTaskFilters();
-    });
-    document.getElementById('applyLogFilter').addEventListener('click', async () => {
+    }, 300);
+
+    const debouncedLogFilter = debounce(async () => {
       const start = document.getElementById('logDateStart').value || null;
       const end = document.getElementById('logDateEnd').value || null;
       await ensureLifelogLoaded(start, end);
       applyLogFilters();
-    });
+    }, 300);
 
-    document.getElementById('taskNameFilter').addEventListener('input', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskNameFilter').addEventListener('input', debouncedTaskFilter);
     document.getElementById('taskStatus').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
     document.getElementById('taskPriority').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
     document.getElementById('taskModule').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
-    document.getElementById('taskDateStart').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
-    document.getElementById('taskDateEnd').addEventListener('change', () => { currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskDateStart').addEventListener('change', () => { clearActiveButtons(taskQuickButtons); currentPage = 1; applyTaskFilters(); });
+    document.getElementById('taskDateEnd').addEventListener('change', () => { clearActiveButtons(taskQuickButtons); currentPage = 1; applyTaskFilters(); });
 
-    document.getElementById('logNameFilter').addEventListener('input', () => { applyLogFilters(); });
+    document.getElementById('logNameFilter').addEventListener('input', debouncedLogFilter);
     document.getElementById('logDateStart').addEventListener('change', async () => {
+      clearActiveButtons(logQuickButtons);
       const start = document.getElementById('logDateStart').value || null;
       const end = document.getElementById('logDateEnd').value || null;
       if (start && end) {
@@ -1064,6 +1126,7 @@
       applyLogFilters();
     });
     document.getElementById('logDateEnd').addEventListener('change', async () => {
+      clearActiveButtons(logQuickButtons);
       const start = document.getElementById('logDateStart').value || null;
       const end = document.getElementById('logDateEnd').value || null;
       if (start && end) {
@@ -1088,8 +1151,26 @@
       if (endInput) endInput.value = end;
     }
 
-    document.querySelectorAll('[data-range]').forEach(btn => {
+    function setTaskRangeDays(days) {
+      const today = new Date();
+      const end = formatDateUTC(today);
+      const startDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+      if (days > 0) {
+        startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
+      }
+      const start = formatDateUTC(startDate);
+      const startInput = document.getElementById('taskDateStart');
+      const endInput = document.getElementById('taskDateEnd');
+      if (startInput) startInput.value = start;
+      if (endInput) endInput.value = end;
+    }
+
+    const logQuickButtons = Array.from(document.querySelectorAll('[data-range]'));
+    const taskQuickButtons = Array.from(document.querySelectorAll('[data-task-range]'));
+
+    logQuickButtons.forEach(btn => {
       btn.addEventListener('click', async () => {
+        setActiveButton(logQuickButtons, btn);
         const val = btn.getAttribute('data-range');
         if (val === 'today') {
           setLogRangeDays(1);
@@ -1105,6 +1186,21 @@
           await loadLifelogByRange(start, end);
         }
         applyLogFilters();
+      });
+    });
+
+    taskQuickButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setActiveButton(taskQuickButtons, btn);
+        const val = btn.getAttribute('data-task-range');
+        if (val === 'today') {
+          setTaskRangeDays(1);
+        } else {
+          const days = Number(val);
+          if (!Number.isNaN(days)) setTaskRangeDays(days);
+        }
+        currentPage = 1;
+        applyTaskFilters();
       });
     });
 

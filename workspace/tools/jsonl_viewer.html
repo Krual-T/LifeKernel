@@ -1066,23 +1066,56 @@
       }
     }
 
+    function normalizeListingHref(href) {
+      if (!href) return '';
+      let clean = href.split('?')[0].split('#')[0];
+      clean = clean.replace(/\\/g, '/');
+      if (clean.startsWith('/')) clean = clean.slice(1);
+      const idx = clean.indexOf('lifelog/');
+      if (idx >= 0) clean = clean.slice(idx + 'lifelog/'.length);
+      return clean;
+    }
+
+    function extractListingHrefs(html) {
+      return Array.from(html.matchAll(/href=\"([^\"]+)\"/g)).map(m => m[1]);
+    }
+
     async function tryListFilesFromDirectory() {
       const bases = ['../lifelog/', './lifelog/', '/lifelog/'];
       for (const base of bases) {
         const res = await fetch(base);
         if (!res.ok) continue;
         const html = await res.text();
-        const hrefs = Array.from(html.matchAll(/href=\"([^\"]+)\"/g)).map(m => m[1]);
-        const files = hrefs
-          .filter(h => h.endsWith('.jsonl'))
-          .map(h => h.replace(/\\/g, '/'))
-          .map(h => h.replace(/^\//, ''))
-          .map(h => {
-            const idx = h.indexOf('lifelog/');
-            return idx >= 0 ? h.slice(idx + 'lifelog/'.length) : h;
-          });
-        const filtered = files.filter(f => f.split('/').length >= 3);
-        if (filtered.length > 0) return { base, files: filtered };
+        const hrefs = extractListingHrefs(html);
+        const items = hrefs.map(normalizeListingHref).filter(Boolean);
+        const directFiles = items.filter(h => h.endsWith('.jsonl'));
+        const yearDirs = items.filter(h => /^\d{4}\/$/.test(h));
+        if (directFiles.length > 0) {
+          const filtered = directFiles.filter(f => f.split('/').length >= 3);
+          if (filtered.length > 0) return { base, files: filtered };
+        }
+        if (yearDirs.length > 0) {
+          const files = [];
+          for (const year of yearDirs) {
+            const yearRes = await fetch(`${base}${year}`);
+            if (!yearRes.ok) continue;
+            const yearHtml = await yearRes.text();
+            const yearItems = extractListingHrefs(yearHtml).map(normalizeListingHref).filter(Boolean);
+            const monthDirs = yearItems.filter(h => /^\d{2}\/$/.test(h));
+            for (const month of monthDirs) {
+              const monthRes = await fetch(`${base}${year}${month}`);
+              if (!monthRes.ok) continue;
+              const monthHtml = await monthRes.text();
+              const monthItems = extractListingHrefs(monthHtml).map(normalizeListingHref).filter(Boolean);
+              const monthFiles = monthItems.filter(h => h.endsWith('.jsonl'));
+              for (const file of monthFiles) {
+                const name = file.includes('/') ? file.split('/').pop() : file;
+                if (name) files.push(`${year}${month}${name}`);
+              }
+            }
+          }
+          if (files.length > 0) return { base, files };
+        }
       }
       throw new Error('no directory listing');
     }

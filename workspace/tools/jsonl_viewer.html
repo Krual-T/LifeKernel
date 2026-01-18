@@ -1079,6 +1079,10 @@
     function extractListingHrefs(html) {
       const hrefs = Array.from(html.matchAll(/href="([^"]+)"/g)).map(m => m[1]);
       if (hrefs.length > 0) return hrefs;
+      const single = Array.from(html.matchAll(/href='([^']+)'/g)).map(m => m[1]);
+      if (single.length > 0) return single;
+      const dataHrefs = Array.from(html.matchAll(/data-href="([^"]+)"/g)).map(m => m[1]);
+      if (dataHrefs.length > 0) return dataHrefs;
       const paths = Array.from(html.matchAll(/\/workspace\/lifelog\/(\d{4}\/\d{2}\/\d{2}\.jsonl)/g)).map(m => m[1]);
       if (paths.length > 0) return paths;
       return [];
@@ -1108,6 +1112,7 @@
         console.debug('[lifelog] listing html length', base, html.length);
         const hrefs = extractListingHrefs(html);
         console.debug('[lifelog] listing hrefs raw', base, hrefs.length);
+        console.debug('[lifelog] listing hrefs raw sample', base, hrefs.slice(0, 10));
         const items = hrefs.map(normalizeListingHref).filter(Boolean);
         console.debug('[lifelog] listing hrefs sample', base, items.slice(0, 10));
         console.debug('[lifelog] listing hrefs normalized', base, items.length);
@@ -1128,7 +1133,9 @@
             console.debug('[lifelog] listing year status', base, year, yearRes.status);
             if (!yearRes.ok) continue;
             const yearHtml = await yearRes.text();
+            console.debug('[lifelog] listing year html length', base, year, yearHtml.length);
             const yearItems = extractListingHrefs(yearHtml).map(normalizeListingHref).filter(Boolean);
+            console.debug('[lifelog] listing year hrefs sample', base, year, yearItems.slice(0, 10));
             const monthDirs = yearItems.map(h => normalizeDirToken(h, 2)).filter(Boolean);
             console.debug('[lifelog] listing month dirs', base, year, monthDirs.length);
             if (monthDirs.length === 0) {

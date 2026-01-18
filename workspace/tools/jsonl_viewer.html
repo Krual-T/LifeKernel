@@ -271,7 +271,7 @@
     th,
     td {
       border-bottom: 1px solid var(--border);
-      padding: 8px 10px;
+      padding: 12px 10px;
       font-size: 12px;
       text-align: left;
     }
@@ -299,7 +299,7 @@
     }
 
     .table-col-title {
-      width: 40%;
+      width: 50%;
     }
 
     .table-col-date {
@@ -330,7 +330,8 @@
     .filter-actions {
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      align-items: center;
     }
 
     .filter-actions button {
@@ -564,20 +565,20 @@
               <input type="date" id="logDateEnd" />
             </div>
             <div class="field">
-              <label for="logNameFilter">Keyword</label>
-              <input type="text" id="logNameFilter" placeholder="Log description" />
-            </div>
-            <div class="field">
-              <label>&nbsp;</label>
-              <button id="applyLogFilter">Apply Log Filters</button>
-            </div>
-            <div class="field">
               <label>Quick</label>
               <div class="filter-actions">
                 <button type="button" data-range="today">Today</button>
                 <button type="button" data-range="7">Last 7 Days</button>
                 <button type="button" data-range="30">Last 30 Days</button>
               </div>
+            </div>
+            <div class="field">
+              <label for="logNameFilter">Keyword</label>
+              <input type="text" id="logNameFilter" placeholder="Log description" />
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button id="applyLogFilter">Apply Log Filters</button>
             </div>
           </div>
         </div>
@@ -798,19 +799,22 @@
     function renderLifelogTable(entries) {
       const table = [
         '<table>',
-        '<thead><tr><th class=\"table-col-date\">Time</th><th class=\"table-col-date\">Module</th><th class=\"table-col-date\">Status</th><th>Description</th></tr></thead>',
+        '<thead><tr><th class=\"table-col-date\">Time</th><th>Description</th></tr></thead>',
         '<tbody>'
       ];
       const grouped = groupByDate(entries);
       for (const e of grouped) {
         if (e._dateHeader) {
-          table.push(`<tr class=\"date-separator\"><td colspan=\"4\">${e._dateHeader}</td></tr>`);
+          table.push(`<tr class=\"date-separator\"><td colspan=\"2\">${e._dateHeader}</td></tr>`);
           continue;
         }
         const desc = e.description || e.raw || '';
         const files = (e.related_files || []).join(', ');
         const time = formatTimeShort(e.timestamp || '');
-        table.push(`<tr><td><span class=\"mono\">${time}</span></td><td>${e.module || ''}</td><td>${e.status || ''}</td><td>${desc}${files ? `<div class=\"log-paths\">${files}</div>` : ''}</td></tr>`);
+        const module = e.module || '';
+        const status = e.status || '';
+        const meta = module || status ? `<div class=\"timeline-meta\"><span class=\"meta-dot\"></span><span>${module}</span><span>${status}</span></div>` : '';
+        table.push(`<tr><td><span class=\"mono\">${time}</span></td><td>${desc}${meta}${files ? `<div class=\"log-paths\">${files}</div>` : ''}</td></tr>`);
       }
       table.push('</tbody></table>');
       document.getElementById('lifelogTable').innerHTML = table.join('');

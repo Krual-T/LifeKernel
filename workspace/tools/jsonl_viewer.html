@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -47,54 +47,54 @@
 <body>
   <div class="container">
     <h1>LifeKernel Dashboard</h1>
-    <div class="muted">默认加载全部日期的任务与 lifelog。任务筛选与日志筛选完全独立。</div>
+    <div class="muted">Default loads tasks and lifelog. Task filters and log filters are independent.</div>
 
     <div id="corsNotice" class="section warn" style="display:none;"></div>
 
     <div class="section card">
-      <h2>任务筛选</h2>
+      <h2>Task Filters</h2>
       <div class="row center">
-        <label>日期从：</label>
+        <label>From:</label>
         <input type="date" id="taskDateStart" />
-        <label>到：</label>
+        <label>To:</label>
         <input type="date" id="taskDateEnd" />
-        <label>名称/关键词：</label>
-        <input type="text" id="taskNameFilter" placeholder="任务标题" />
-        <label>任务状态：</label>
+        <label>Title/Keyword:</label>
+        <input type="text" id="taskNameFilter" placeholder="Task title" />
+        <label>Status:</label>
         <select id="taskStatus">
-          <option value="all">全部</option>
-          <option value="pending">未完成</option>
-          <option value="done">已完成</option>
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="done">Done</option>
         </select>
-        <label>优先级：</label>
+        <label>Priority:</label>
         <select id="taskPriority">
-          <option value="all">全部</option>
+          <option value="all">All</option>
           <option value="low">low</option>
           <option value="medium">medium</option>
           <option value="high">high</option>
         </select>
-        <label>模块：</label>
+        <label>Module:</label>
         <select id="taskModule">
-          <option value="all">全部</option>
+          <option value="all">All</option>
           <option value="work">work</option>
           <option value="personal">personal</option>
           <option value="learning">learning</option>
           <option value="health">health</option>
         </select>
-        <button id="applyTaskFilter">应用任务筛选</button>
+        <button id="applyTaskFilter">Apply Task Filters</button>
       </div>
     </div>
 
     <div class="section card">
-      <h2>日志筛选</h2>
+      <h2>Log Filters</h2>
       <div class="row center">
-        <label>日期从：</label>
+        <label>From:</label>
         <input type="date" id="logDateStart" />
-        <label>到：</label>
+        <label>To:</label>
         <input type="date" id="logDateEnd" />
-        <label>关键词：</label>
-        <input type="text" id="logNameFilter" placeholder="日志描述" />
-        <button id="applyLogFilter">应用日志筛选</button>
+        <label>Keyword:</label>
+        <input type="text" id="logNameFilter" placeholder="Log description" />
+        <button id="applyLogFilter">Apply Log Filters</button>
       </div>
     </div>
 
@@ -102,28 +102,28 @@
     <div id="logLoading" class="section loading" style="display:none;"></div>
 
     <div class="section">
-      <h2>任务（含筛选结果）</h2>
+      <h2>Tasks (filtered)</h2>
       <div id="taskSummary" class="row center"></div>
       <div class="section">
-        <h3>未完成任务（卡片）</h3>
+        <h3>Pending Tasks (cards)</h3>
         <div id="taskList" class="list"></div>
       </div>
       <div class="section">
-        <h3>任务表格（含已完成）</h3>
+        <h3>Task Table (includes done)</h3>
         <div id="taskTable"></div>
         <div class="row center" style="margin-top:10px;">
-          <button id="prevPage">上一页</button>
+          <button id="prevPage">Prev</button>
           <span id="pageInfo" class="muted"></span>
-          <button id="nextPage">下一页</button>
+          <button id="nextPage">Next</button>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <h2>日志（含筛选结果）</h2>
+      <h2>Logs (filtered)</h2>
       <div id="lifelogTable"></div>
       <div class="section">
-        <h3>日志卡片</h3>
+        <h3>Log Cards</h3>
         <div id="lifelogList" class="list"></div>
       </div>
     </div>
@@ -180,13 +180,13 @@
     function statusBadge(status) {
       const s = status || 'pending';
       const cls = s === 'done' ? 'status-done' : 'status-pending';
-      return `<span class="badge ${cls}">${s}</span>`;
+      return `<span class=\"badge ${cls}\">${s}</span>`;
     }
 
     function priorityBadge(priority) {
       const p = priority || 'medium';
       const cls = p === 'high' ? 'priority-high' : (p === 'low' ? 'priority-low' : 'priority-medium');
-      return `<span class="badge ${cls}">${p}</span>`;
+      return `<span class=\"badge ${cls}\">${p}</span>`;
     }
 
     let currentPage = 1;
@@ -198,7 +198,7 @@
       if (currentPage > totalPages) currentPage = totalPages;
       const start = (currentPage - 1) * pageSize;
       const end = start + pageSize;
-      document.getElementById('pageInfo').textContent = `第 ${currentPage} / ${totalPages} 页`;
+      document.getElementById('pageInfo').textContent = `Page ${currentPage} / ${totalPages}`;
       return items.slice(start, end);
     }
 
@@ -209,21 +209,21 @@
 
       const summary = document.getElementById('taskSummary');
       summary.innerHTML = '';
-      summary.appendChild(makeCard('总数', String(tasks.length)));
-      summary.appendChild(makeCard('未完成', String(pending.length)));
-      summary.appendChild(makeCard('已完成', String(done.length)));
+      summary.appendChild(makeCard('Total', String(tasks.length)));
+      summary.appendChild(makeCard('Pending', String(pending.length)));
+      summary.appendChild(makeCard('Done', String(done.length)));
 
       const list = document.getElementById('taskList');
       list.innerHTML = '';
       if (pending.length === 0) {
-        list.innerHTML = '<div class="muted">暂无未完成任务</div>';
+        list.innerHTML = '<div class=\"muted\">No pending tasks</div>';
       } else {
         for (const t of pending) {
           const el = document.createElement('div');
           el.className = 'card';
           el.innerHTML = `
             <div><strong>[${t.module || 'work'}]</strong> ${t.title || ''}</div>
-            <div class="muted">Status: ${statusBadge(t.status)} | Priority: ${priorityBadge(t.priority)} | Due: ${t.due_time || '-'}</div>
+            <div class=\"muted\">Status: ${statusBadge(t.status)} | Priority: ${priorityBadge(t.priority)} | Due: ${t.due_time || '-'}</div>
             <div>${t.details || ''}</div>
           `;
           list.appendChild(el);
@@ -251,18 +251,18 @@
       const list = document.getElementById('lifelogList');
       list.innerHTML = '';
       if (entries.length === 0) {
-        list.innerHTML = '<div class="muted">暂无 lifelog</div>';
+        list.innerHTML = '<div class=\"muted\">No lifelog entries</div>';
       } else {
         for (const e of entries) {
           const el = document.createElement('div');
           el.className = 'card';
           if (e._parseError) {
-            el.innerHTML = `<div class="error">解析失败：${e.raw}</div>`;
+            el.innerHTML = `<div class=\"error\">Parse error: ${e.raw}</div>`;
           } else {
             el.innerHTML = `
-              <div><strong>${e.timestamp || ''}</strong> <span class="pill">${e.module || 'work'}</span> <span class="pill">${e.status || ''}</span></div>
+              <div><strong>${e.timestamp || ''}</strong> <span class=\"pill\">${e.module || 'work'}</span> <span class=\"pill\">${e.status || ''}</span></div>
               <div>${e.description || ''}</div>
-              <div class="muted">${(e.related_files || []).join(', ')}</div>
+              <div class=\"muted\">${(e.related_files || []).join(', ')}</div>
             `;
           }
           list.appendChild(el);
@@ -288,7 +288,7 @@
     function makeCard(title, value) {
       const el = document.createElement('div');
       el.className = 'card';
-      el.innerHTML = `<div class="muted">${title}</div><div style="font-size:20px;">${value}</div>`;
+      el.innerHTML = `<div class=\"muted\">${title}</div><div style=\"font-size:20px;\">${value}</div>`;
       return el;
     }
 
@@ -299,6 +299,7 @@
     let allLifelog = [];
     let lifelogRangeKey = null;
     let lifelogSource = null;
+    let lifelogBase = null;
 
     function setLogLoading(isLoading, message) {
       if (logLoadingEl) {
@@ -352,56 +353,88 @@
       renderLifelog(logs);
     }
 
+    async function fetchFirst(paths) {
+      let lastError = null;
+      for (const p of paths) {
+        try {
+          const res = await fetch(p);
+          if (res.ok) return { res, path: p };
+        } catch (e) {
+          lastError = e;
+        }
+      }
+      throw lastError || new Error('all fetch attempts failed');
+    }
+
     async function loadTasks() {
       try {
-        const res = await fetch('../tasks/tasks.jsonl');
-        if (!res.ok) throw new Error('tasks.jsonl not found');
-        const text = await res.text();
+        const candidates = ['../tasks/tasks.jsonl', './tasks/tasks.jsonl', '/tasks/tasks.jsonl'];
+        const result = await fetchFirst(candidates);
+        const text = await result.res.text();
         allTasks = parseJsonl(text);
         applyTaskFilters();
-        statusEl.textContent = '已加载任务文件：workspace/tasks/tasks.jsonl';
+        statusEl.textContent = `Loaded tasks: ${result.path.replace(/^\//, '')}`;
       } catch (e) {
-        statusEl.textContent = '无法自动读取任务文件，请确保 Live Preview 可访问该文件。';
+        statusEl.textContent = 'Cannot read tasks.jsonl. Use Live Preview with access to workspace files.';
       }
     }
 
     async function tryListFilesFromDirectory() {
-      const res = await fetch('../lifelog/');
-      if (!res.ok) throw new Error('no directory listing');
-      const html = await res.text();
-      const hrefs = Array.from(html.matchAll(/href="([^"]+)"/g)).map(m => m[1]);
-      const files = hrefs.filter(h => h.endsWith('.jsonl')).map(h => h.replace(/^\//, ''));
-      return files.filter(f => f.split('/').length >= 3);
+      const bases = ['../lifelog/', './lifelog/', '/lifelog/'];
+      for (const base of bases) {
+        const res = await fetch(base);
+        if (!res.ok) continue;
+        const html = await res.text();
+        const hrefs = Array.from(html.matchAll(/href=\"([^\"]+)\"/g)).map(m => m[1]);
+        const files = hrefs.filter(h => h.endsWith('.jsonl')).map(h => h.replace(/^\//, ''));
+        const filtered = files.filter(f => f.split('/').length >= 3);
+        if (filtered.length > 0) return { base, files: filtered };
+      }
+      throw new Error('no directory listing');
     }
 
-    async function loadLifelogByFiles(files) {
+    async function loadLifelogByFiles(files, base) {
+      const baseDir = base || lifelogBase || '../lifelog/';
       if (!files || files.length === 0) {
         allLifelog = [];
         applyLogFilters();
-        statusEl.textContent = '未找到可加载的 lifelog 文件。';
+        statusEl.textContent = 'No lifelog files found.';
         return;
       }
-      setLogLoading(true, `加载中... 0/${files.length}`);
+      setLogLoading(true, `Loading... 0/${files.length}`);
       const texts = [];
       const batchSize = 20;
       try {
         for (let i = 0; i < files.length; i += batchSize) {
           const batch = files.slice(i, i + batchSize);
-          const results = await Promise.all(batch.map(f => fetch(`../lifelog/${f}`).then(r => r.ok ? r.text() : '')));
+          const results = await Promise.all(batch.map(f => fetch(`${baseDir}${f}`).then(r => r.ok ? r.text() : '')));
           texts.push(...results);
           const done = Math.min(i + batchSize, files.length);
-          setLogLoading(true, `加载中... ${done}/${files.length}`);
+          setLogLoading(true, `Loading... ${done}/${files.length}`);
         }
         allLifelog = texts.flatMap(t => t ? parseJsonl(t) : []);
         applyLogFilters();
-        statusEl.textContent = `已加载全部 lifelog：${allLifelog.length} 条`;
+        statusEl.textContent = `Loaded lifelog: ${allLifelog.length} entries`;
       } catch (e) {
         allLifelog = [];
         applyLogFilters();
-        statusEl.textContent = '加载 lifelog 失败，请稍后重试。';
+        statusEl.textContent = 'Failed to load lifelog.';
       } finally {
         setLogLoading(false, '');
       }
+    }
+
+    async function resolveLifelogBaseByProbe(file) {
+      const bases = ['../lifelog/', './lifelog/', '/lifelog/'];
+      for (const base of bases) {
+        try {
+          const res = await fetch(`${base}${file}`);
+          if (res.ok || res.status === 404) return base;
+        } catch (e) {
+          // ignore and continue
+        }
+      }
+      return '../lifelog/';
     }
 
     async function loadLifelogByRange(start, end) {
@@ -413,14 +446,17 @@
       for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
         files.push(`${formatDateUTC(d).replace(/-/g, '/')}.jsonl`);
       }
-      await loadLifelogByFiles(files);
+      const base = lifelogBase || await resolveLifelogBaseByProbe(files[0]);
+      lifelogBase = base;
+      await loadLifelogByFiles(files, base);
     }
 
     async function loadAllLifelog() {
       try {
-        const files = await tryListFilesFromDirectory();
-        if (files.length > 0) {
-          await loadLifelogByFiles(files);
+        const result = await tryListFilesFromDirectory();
+        if (result.files.length > 0) {
+          lifelogBase = result.base;
+          await loadLifelogByFiles(result.files, result.base);
           lifelogSource = 'listing';
           lifelogRangeKey = null;
           return;
@@ -429,7 +465,7 @@
       } catch (e) {
         allLifelog = [];
         applyLogFilters();
-        statusEl.textContent = '无法自动获取 lifelog 列表，请使用日志日期范围筛选加载。';
+        statusEl.textContent = 'Cannot list lifelog files. Use date range to load.';
         const start = document.getElementById('logDateStart').value || null;
         const end = document.getElementById('logDateEnd').value || null;
         if (start && end) {
@@ -507,7 +543,7 @@
     const notice = document.getElementById('corsNotice');
     if (location.protocol === 'file:') {
       notice.style.display = 'block';
-      notice.innerHTML = '检测到 file:// 打开方式，浏览器会阻止读取本地文件。请通过 Live Preview 以 http:// 打开。';
+      notice.innerHTML = 'Detected file:// access. Use Live Preview via http:// to load local files.';
     }
 
     function initLogDefaults() {

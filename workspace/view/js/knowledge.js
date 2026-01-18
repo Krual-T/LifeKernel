@@ -63,10 +63,10 @@ async function loadKnowledge() {
     const items = parseJsonl(text).filter(i => !i._parseError);
     items.sort((a, b) => (Date.parse(b.timestamp || '') || 0) - (Date.parse(a.timestamp || '') || 0));
     allKnowledge = items;
-    if (status) status.textContent = `宸插姞杞?${items.length} 鏉;
+    if (status) status.textContent = `已加载 ${items.length} 条`;
     applyKnowledgeFilters();
   } catch (e) {
-    if (status) status.textContent = '鏃犳硶璇诲彇 knowledge.jsonl銆傝浣跨敤 Live Server銆?;
+    if (status) status.textContent = '无法读取 knowledge.jsonl。请使用 Live Server。';
     renderKnowledge([]);
   }
 }

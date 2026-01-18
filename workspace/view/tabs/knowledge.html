@@ -1,0 +1,28 @@
+<div class="section">
+  <h2>Knowledge</h2>
+  <div class="section card">
+    <div class="filter-header">
+      <h3>Filters</h3>
+      <div class="toggle-inline">
+        <input id="knowledgeAutoRefresh" type="checkbox" checked />
+        <span>Auto Refresh</span>
+      </div>
+    </div>
+    <div class="filter-panel">
+      <div class="filter-row">
+        <div class="filter-field filter-text">
+          <label for="knowledgeSearch">Keyword</label>
+          <input type="text" id="knowledgeSearch" placeholder="Title / tags / content" />
+        </div>
+        <div class="filter-field filter-quick">
+          <label>&nbsp;</label>
+          <div class="filter-actions">
+            <button type="button" id="knowledgeRefresh">Refresh</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="knowledgeStatus" class="muted"></div>
+  </div>
+  <div id="knowledgeList" class="list"></div>
+</div>

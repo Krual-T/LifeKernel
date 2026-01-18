@@ -41,8 +41,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 4. **可选：auto record**
    - 当 record_type = knowledge 且 auto_record = true 时，追加一条 lifelog
 5. **必要时更新可视化**
-   - knowledge：`workspace/tools/knowledge_viewer.html`
-   - lifelog/tasks：`workspace/tools/jsonl_viewer.html`
+   - knowledge/lifelog/tasks：`workspace/view/index.html`
 
 ## 脚本（推荐）
 

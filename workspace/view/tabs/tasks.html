@@ -1,0 +1,73 @@
+<div class="section">
+  <h2>Tasks</h2>
+  <div id="taskSummary" class="stat-bar"></div>
+  <div class="section card">
+    <h3>Filters</h3>
+    <div class="filter-panel">
+      <div class="filter-row">
+        <div class="filter-field filter-text">
+          <label for="taskNameFilter">Title/Keyword</label>
+          <input type="text" id="taskNameFilter" placeholder="Task title" />
+        </div>
+        <div class="filter-field filter-date">
+          <label for="taskDateStart">From</label>
+          <input type="date" id="taskDateStart" />
+        </div>
+        <div class="filter-field filter-date">
+          <label for="taskDateEnd">To</label>
+          <input type="date" id="taskDateEnd" />
+        </div>
+        <div class="filter-field filter-quick">
+          <label>Quick</label>
+          <div class="filter-actions">
+            <button type="button" data-task-range="today">Today</button>
+            <button type="button" data-task-range="7">Last 7 Days</button>
+            <button type="button" data-task-range="30">Last 30 Days</button>
+          </div>
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-field filter-select">
+          <label for="taskStatus">Status</label>
+          <select id="taskStatus">
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div class="filter-field filter-select">
+          <label for="taskPriority">Priority</label>
+          <select id="taskPriority">
+            <option value="all">All</option>
+            <option value="low">low</option>
+            <option value="medium">medium</option>
+            <option value="high">high</option>
+          </select>
+        </div>
+        <div class="filter-field filter-select">
+          <label for="taskModule">Module</label>
+          <select id="taskModule">
+            <option value="all">All</option>
+            <option value="work">work</option>
+            <option value="personal">personal</option>
+            <option value="learning">learning</option>
+            <option value="health">health</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <h3>To-Do</h3>
+    <div id="taskList" class="list"></div>
+  </div>
+  <div class="section">
+    <h3>All History</h3>
+    <div id="taskTable"></div>
+    <div class="row center" style="margin-top:10px;">
+      <button id="prevPage">Prev</button>
+      <span id="pageInfo" class="muted"></span>
+      <button id="nextPage">Next</button>
+    </div>
+  </div>
+</div>

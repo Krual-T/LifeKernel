@@ -9,6 +9,9 @@
   - `python .\.codex\skills\record-jsonl-unified\scripts\record_jsonl.py --record-type knowledge ...`
 - 默认开启 auto record：写入 knowledge 时会自动追加一条 lifelog。
 
+## 可视化入口
+- `workspace/view/index.html` → Knowledge 标签页
+
 ## JSONL 字段建议
 - id: 字符串，唯一标识
 - timestamp: ISO8601

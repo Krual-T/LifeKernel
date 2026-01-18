@@ -1,0 +1,42 @@
+<div class="section">
+  <h2>Logs</h2>
+  <div class="section card">
+    <div class="filter-header">
+      <h3>Filters</h3>
+      <div class="view-switch" role="group" aria-label="Log view">
+        <button type="button" class="view-button active" data-view="timeline">Timeline</button>
+        <button type="button" class="view-button" data-view="table">List</button>
+      </div>
+    </div>
+    <div class="filter-panel">
+      <div class="filter-row">
+        <div class="filter-field filter-text">
+          <label for="logNameFilter">Keyword</label>
+          <input type="text" id="logNameFilter" placeholder="Log description" />
+        </div>
+        <div class="filter-field filter-date">
+          <label for="logDateStart">From</label>
+          <input type="date" id="logDateStart" />
+        </div>
+        <div class="filter-field filter-date">
+          <label for="logDateEnd">To</label>
+          <input type="date" id="logDateEnd" />
+        </div>
+        <div class="filter-field filter-quick">
+          <label>Quick</label>
+          <div class="filter-actions">
+            <button type="button" data-range="today">Today</button>
+            <button type="button" data-range="7">Last 7 Days</button>
+            <button type="button" data-range="30">Last 30 Days</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="lifelogTablePanel" class="section view-panel">
+    <div id="lifelogTable"></div>
+  </div>
+  <div id="lifelogListPanel" class="section view-panel">
+    <div id="lifelogList" class="list"></div>
+  </div>
+</div>

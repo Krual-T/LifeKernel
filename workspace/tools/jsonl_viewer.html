@@ -1076,7 +1076,11 @@
         const files = hrefs
           .filter(h => h.endsWith('.jsonl'))
           .map(h => h.replace(/\\/g, '/'))
-          .map(h => h.replace(/^\//, ''));
+          .map(h => h.replace(/^\//, ''))
+          .map(h => {
+            const idx = h.indexOf('lifelog/');
+            return idx >= 0 ? h.slice(idx + 'lifelog/'.length) : h;
+          });
         const filtered = files.filter(f => f.split('/').length >= 3);
         if (filtered.length > 0) return { base, files: filtered };
       }

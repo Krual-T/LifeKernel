@@ -1072,7 +1072,10 @@
         if (!res.ok) continue;
         const html = await res.text();
         const hrefs = Array.from(html.matchAll(/href=\"([^\"]+)\"/g)).map(m => m[1]);
-        const files = hrefs.filter(h => h.endsWith('.jsonl')).map(h => h.replace(/^\//, ''));
+        const files = hrefs
+          .filter(h => h.endsWith('.jsonl'))
+          .map(h => h.replace(/\\/g, '/'))
+          .map(h => h.replace(/^\//, ''));
         const filtered = files.filter(f => f.split('/').length >= 3);
         if (filtered.length > 0) return { base, files: filtered };
       }

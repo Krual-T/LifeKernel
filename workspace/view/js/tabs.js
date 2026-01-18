@@ -5,9 +5,9 @@ export async function loadTabPartials() {
     if (!src) continue;
     try {
       const res = await fetch(src);
-      panel.innerHTML = res.ok ? await res.text() : '<div class="warn">鏃犳硶鍔犺浇鏍囩鍐呭銆?/div>';
+      panel.innerHTML = res.ok ? await res.text() : '<div class="warn">无法加载标签内容。</div>';
     } catch (e) {
-      panel.innerHTML = '<div class="warn">鏃犳硶鍔犺浇鏍囩鍐呭锛岃浣跨敤 Live Server銆?/div>';
+      panel.innerHTML = '<div class="warn">无法加载标签内容，请使用 Live Server。</div>';
     }
   }
 }

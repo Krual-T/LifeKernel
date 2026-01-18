@@ -1077,7 +1077,11 @@
     }
 
     function extractListingHrefs(html) {
-      return Array.from(html.matchAll(/href=\"([^\"]+)\"/g)).map(m => m[1]);
+      const hrefs = Array.from(html.matchAll(/href="([^"]+)"/g)).map(m => m[1]);
+      if (hrefs.length > 0) return hrefs;
+      const paths = Array.from(html.matchAll(/\/workspace\/lifelog\/(\d{4}\/\d{2}\/\d{2}\.jsonl)/g)).map(m => m[1]);
+      if (paths.length > 0) return paths;
+      return [];
     }
 
     function normalizeDirToken(value, length) {
@@ -1127,6 +1131,14 @@
             const yearItems = extractListingHrefs(yearHtml).map(normalizeListingHref).filter(Boolean);
             const monthDirs = yearItems.map(h => normalizeDirToken(h, 2)).filter(Boolean);
             console.debug('[lifelog] listing month dirs', base, year, monthDirs.length);
+            if (monthDirs.length === 0) {
+              const yearFiles = yearItems.filter(h => h.endsWith('.jsonl'));
+              console.debug('[lifelog] listing year files', base, year, yearFiles.length);
+              for (const file of yearFiles) {
+                const name = file.includes('/') ? file.split('/').pop() : file;
+                if (name) files.push(`${year}${name}`);
+              }
+            }
             for (const month of monthDirs) {
               console.debug('[lifelog] listing month', base, year, month);
               const monthRes = await fetch(`${base}${year}${month}`);

@@ -1080,8 +1080,14 @@
       return Array.from(html.matchAll(/href=\"([^\"]+)\"/g)).map(m => m[1]);
     }
 
+    function getLifelogBases() {
+      const path = location.pathname || '';
+      const root = path.includes('/workspace/') ? '/workspace/' : '/';
+      return [`${root}lifelog/`, '../lifelog/'];
+    }
+
     async function tryListFilesFromDirectory() {
-      const bases = ['../lifelog/', './lifelog/', '/lifelog/'];
+      const bases = getLifelogBases();
       for (const base of bases) {
         console.debug('[lifelog] listing base', base);
         const res = await fetch(base);
@@ -1180,7 +1186,7 @@
     }
 
     async function resolveLifelogBaseByProbe(file) {
-      const bases = ['../lifelog/', './lifelog/', '/lifelog/'];
+      const bases = getLifelogBases();
       for (const base of bases) {
         try {
           const res = await fetch(`${base}${file}`);

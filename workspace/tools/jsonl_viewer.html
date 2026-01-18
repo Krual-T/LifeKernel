@@ -1069,6 +1069,11 @@
     function normalizeListingHref(href) {
       if (!href) return '';
       let clean = href.split('?')[0].split('#')[0];
+      try {
+        clean = decodeURIComponent(clean);
+      } catch (e) {
+        // ignore decode errors
+      }
       clean = clean.replace(/\\/g, '/');
       if (clean.startsWith('/')) clean = clean.slice(1);
       const idx = clean.indexOf('lifelog/');

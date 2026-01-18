@@ -8,7 +8,7 @@ function showCorsNotice() {
   if (!notice) return;
   if (location.protocol === 'file:') {
     notice.style.display = 'block';
-    notice.innerHTML = '妫€娴嬪埌 file:// 璁块棶锛岃浣跨敤 Live Server 鎵撳紑椤甸潰銆?;
+    notice.innerHTML = '��⵽ file:// ���ʣ���ʹ�� Live Server ��ҳ�档';
   }
 }
 

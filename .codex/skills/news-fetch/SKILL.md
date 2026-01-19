@@ -25,7 +25,7 @@ description: "Search and archive significant global events (7-day window). Topic
 
 4. **语义去重（Smart Dedupe）**
    - 读取 `workspace/records/news/news.jsonl` 历史记录
-   - 判定逻辑：标题相似度 > 0.8 且日期差异 <= 1 天 → 视为重复
+   - 由 AI 判断是否为同一事件（允许标题/日期轻微差异）
    - 来源权威度更高者优先保留
    - 写入 `dedupe` 字段（策略+剔除数量）
 
@@ -35,6 +35,10 @@ description: "Search and archive significant global events (7-day window). Topic
    - 使用 `recorder` 脚本：`record_jsonl.py --record-type news`
    - 推荐通过 `--extra` 写入结构化内容
 
+6. **News Fetch 自用 TODO**
+   - 每次调用 News Fetch，都先在 `workspace/records/tasks/task_list.md` 创建本次抓取的 TODO 清单
+   - 清单至少包含：分 Topic 检索、去重、写入 news、补充 coverage_gap、产出摘要
+
 ## 推荐记录结构（news）
 
 ```json
@@ -42,7 +46,7 @@ description: "Search and archive significant global events (7-day window). Topic
   "type": "news_item",
   "run_id": "uuid",
   "date": "YYYY-MM-DD",
-  "category": "国际冲突|贸易政策|中国政策|AI公司|AI/Agent研究",
+  "category": "AI 自动判定（可随主题变化）",
   "summary": "...",
   "sources": [{"name":"...","url":"..."}],
   "entities": ["..."],

@@ -468,23 +468,30 @@
       color: #fff;
     }
 
+    .log-filter-panel {
+      gap: 8px;
+    }
+
+    .log-filter-panel .filter-row {
+      gap: 8px;
+    }
+
     .log-filter-grid {
       display: grid;
-      grid-template-columns: minmax(240px, 1fr) minmax(180px, 220px);
-      gap: 12px;
+      grid-template-columns: minmax(260px, 1fr) minmax(160px, 200px);
+      gap: 10px;
       align-items: end;
     }
 
     .log-actions-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .log-status {
-      margin-left: auto;
+      margin-left: 0;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -530,7 +537,7 @@
     .timeline-field {
       flex-direction: row;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .timeline-field label {
@@ -786,6 +793,10 @@
 
     @media (max-width: 720px) {
       .log-filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .log-actions-row {
         grid-template-columns: 1fr;
       }
 

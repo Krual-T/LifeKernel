@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lifekernel"
+version = "0.1.0"
+description = "LifeKernel project"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.uv]
+# uv will use this project for dependency resolution

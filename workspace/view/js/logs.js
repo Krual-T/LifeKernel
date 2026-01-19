@@ -17,6 +17,10 @@ let lifelogSource = null;
 let lifelogBase = null;
 let lifelogFileIndex = null;
 let filteredLifelog = [];
+let rangeStart = null;
+let rangeEnd = null;
+let isLoadingMore = false;
+let hasMoreOlder = true;
 const timelineState = {
   pageSize: 200,
   rendered: 0,
@@ -43,6 +47,24 @@ function getDefaultRangeDays(days) {
     startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
   }
   return { start: formatDateUTC(startDate), end: formatDateUTC(endDate) };
+}
+
+function shiftDate(dateStr, days) {
+  const dt = parseDateInput(dateStr);
+  if (!dt) return null;
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return formatDateUTC(dt);
+}
+
+function buildRangeFiles(start, end) {
+  const startDate = parseDateInput(start);
+  const endDate = parseDateInput(end);
+  if (!startDate || !endDate) return [];
+  const files = [];
+  for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
+    files.push(`${formatDateUTC(d).replace(/-/g, '/')}.jsonl`);
+  }
+  return files;
 }
 
 function groupByDate(entries) {
@@ -137,6 +159,14 @@ function renderTimeline(reset = false) {
   renderTimelineChunk(reset);
 }
 
+function shouldLoadMoreTimeline() {
+  const listPanel = document.getElementById('lifelogListPanel');
+  if (!listPanel || listPanel.style.display === 'none') return false;
+  const threshold = 240;
+  const scrollBottom = window.innerHeight + window.scrollY;
+  return scrollBottom >= (document.body.scrollHeight - threshold);
+}
+
 function ensureDateRendered(dateStr) {
   if (!dateStr) return false;
   const index = filteredLifelog.findIndex(e => formatDateShort(e.timestamp || '') === dateStr);
@@ -195,6 +225,54 @@ function applyLogFilters() {
   filteredLifelog = logs;
   renderTimeline(true);
   renderLifelogTable(logs.filter(e => !e._parseError));
+}
+
+function filterByName(entries, name) {
+  if (!name) return entries.filter(e => !e._parseError);
+  const key = name.toLowerCase();
+  return entries.filter(e => !e._parseError && String(e.description || '').toLowerCase().includes(key));
+}
+
+async function loadOlderRangeChunk(statusEl) {
+  if (isLoadingMore || !hasMoreOlder || !rangeStart) return;
+  const newEnd = shiftDate(rangeStart, -1);
+  const newStart = shiftDate(rangeStart, -3);
+  if (!newEnd || !newStart) return;
+  const files = buildRangeFiles(newStart, newEnd);
+  if (!files.length) return;
+  isLoadingMore = true;
+  try {
+    const index = await getLifelogFileIndex();
+    let useFiles = files;
+    if (index && index.length) {
+      const set = new Set(index);
+      useFiles = files.filter(f => set.has(f));
+    }
+    if (useFiles.length === 0) {
+      hasMoreOlder = false;
+      return;
+    }
+    const base = lifelogBase || await resolveLifelogBaseByProbe(useFiles[0]);
+    lifelogBase = base;
+    const entries = await fetchLifelogEntries(useFiles, base, statusEl);
+    if (entries.length === 0) {
+      hasMoreOlder = false;
+      return;
+    }
+    allLifelog = allLifelog.concat(entries);
+    const name = (document.getElementById('logNameFilter')?.value || '').trim();
+    const matched = filterByName(entries, name);
+    if (matched.length) {
+      filteredLifelog = filteredLifelog.concat(matched);
+      renderTimelineChunk(false);
+      renderLifelogTable(filteredLifelog.filter(e => !e._parseError));
+    }
+    rangeStart = newStart;
+    lifelogRangeKey = `${rangeStart}..${rangeEnd || rangeStart}`;
+    lifelogSource = 'range';
+  } finally {
+    isLoadingMore = false;
+  }
 }
 
 function setLogLoading(isLoading, message) {
@@ -317,12 +395,18 @@ async function getLifelogFileIndex() {
 
 async function loadLifelogByFiles(files, base, statusEl) {
   const baseDir = base || lifelogBase || '../records/lifelog/';
-  if (!files || files.length === 0) {
-    allLifelog = [];
-    applyLogFilters();
-    if (statusEl) statusEl.textContent = 'No lifelog files found.';
-    return;
+  const entries = await fetchLifelogEntries(files, baseDir, statusEl);
+  allLifelog = entries;
+  applyLogFilters();
+  if (statusEl) {
+    statusEl.textContent = entries.length > 0
+      ? `Loaded lifelog: ${allLifelog.length} entries`
+      : 'No lifelog files found.';
   }
+}
+
+async function fetchLifelogEntries(files, baseDir, statusEl) {
+  if (!files || files.length === 0) return [];
   setLogLoading(true, `Loading... 0/${files.length}`);
   const texts = [];
   const batchSize = 20;
@@ -334,13 +418,10 @@ async function loadLifelogByFiles(files, base, statusEl) {
       const done = Math.min(i + batchSize, files.length);
       setLogLoading(true, `Loading... ${done}/${files.length}`);
     }
-    allLifelog = texts.flatMap(t => t ? parseJsonl(t) : []);
-    applyLogFilters();
-    if (statusEl) statusEl.textContent = `Loaded lifelog: ${allLifelog.length} entries`;
+    return texts.flatMap(t => t ? parseJsonl(t) : []);
   } catch (e) {
-    allLifelog = [];
-    applyLogFilters();
     if (statusEl) statusEl.textContent = 'Failed to load lifelog.';
+    return [];
   } finally {
     setLogLoading(false, '');
   }
@@ -421,6 +502,12 @@ export function initLogs(statusEl) {
     loadMoreBtn.addEventListener('click', () => renderTimelineChunk(false));
   }
 
+  window.addEventListener('scroll', debounce(async () => {
+    if (shouldLoadMoreTimeline()) {
+      await loadOlderRangeChunk(statusEl);
+    }
+  }, 200));
+
   async function jumpToDate(dateStr) {
     if (!dateStr) return;
     await ensureLifelogLoaded(null, null, statusEl);
@@ -470,6 +557,8 @@ export function initLogs(statusEl) {
   }
 
   const { start, end } = getDefaultRangeDays(3);
+  rangeStart = start;
+  rangeEnd = end;
   lifelogRangeKey = `${start}..${end}`;
   lifelogSource = 'range';
   loadLifelogByRange(start, end, statusEl);

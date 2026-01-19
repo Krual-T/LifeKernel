@@ -23,19 +23,24 @@ description: "Search and archive significant global events (7-day window). Topic
    - AI 领域优先：公司官方博客/研究发布 + arXiv
    - 政策领域优先：政府官网/央行/监管机构/权威媒体
 
-4. **语义去重（Smart Dedupe）**
+4. **候选列表 → 精选集合（List + Set）**
+   - 先将检索结果放入“待看 list”（仅收集标题/日期/来源链接）
+   - 逐条阅读并判断是否纳入“提炼 set”
+   - set 采用语义去重（AI 判定是否同一事件）
+
+5. **语义去重（Smart Dedupe）**
    - 读取 `workspace/records/news/news.jsonl` 历史记录
    - 由 AI 判断是否为同一事件（允许标题/日期轻微差异）
    - 来源权威度更高者优先保留
    - 写入 `dedupe` 字段（策略+剔除数量）
 
-5. **原子化写入（Atomic Storage）**
+6. **原子化写入（Atomic Storage）**
    - 每条新闻单独写一条 `news` 记录（便于检索/RAG）
    - 不写 `news_digest`，仅保留原子化条目
    - 使用 `recorder` 脚本：`record_jsonl.py --record-type news`
    - 推荐通过 `--extra` 写入结构化内容
 
-6. **News Fetch 自用 TODO**
+7. **News Fetch 自用 TODO**
    - 每次调用 News Fetch，都先在 `workspace/records/tasks/task_list.md` 创建本次抓取的 TODO 清单
    - 清单至少包含：分 Topic 检索、去重、写入 news、补充 coverage_gap、产出摘要
 

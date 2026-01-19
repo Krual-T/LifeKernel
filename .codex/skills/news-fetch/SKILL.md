@@ -41,9 +41,9 @@ description: "Search and archive significant global events (7-day window). Topic
    - 推荐通过 `--extra` 写入结构化内容
 
 7. **News Fetch 自用 TODO**
-   - 每次调用 News Fetch，都先在 `workspace/records/news/news-fetch_todo_list.md` 创建本次抓取的 TODO 清单
+   - 每次调用 News Fetch，都先基于模板更新 `workspace/records/news/news-fetch_todo_list.md`
    - 清单至少包含：分 Topic 检索、去重、写入 news、补充 coverage_gap、产出摘要
-   - 完成后将 TODO 归档进 `news.jsonl`（使用 recorder 写入，避免写入 title 以免出现在新闻视图中）
+   - 完成后将 TODO 归档到 `workspace/records/news/archive/YYYY/MM/DD_news-fetch_todo.md`
 
 8. **List / Set 文件位置**
    - 待看 list：`workspace/records/news/staging_candidates.jsonl`

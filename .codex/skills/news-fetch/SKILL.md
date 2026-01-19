@@ -13,7 +13,7 @@ description: "Search and archive significant global events (7-day window). Topic
    - 以系统当前日期为 T，窗口为 T-7 至 T（含首尾）
 
 2. **确认范围**
-   - 默认范围：国际冲突、贸易政策、中国政策、AI/Agent
+   - 默认范围：国际冲突、贸易政策、中国政策、AI/Agent（含公司/实验室/论文）
    - 默认关注实体：OpenAI、Google/DeepMind、阿里、字节、腾讯、智谱、清华相关实验室、幻方量化
    - 若用户提供新增实体或范围，加入 `scope.entities_watch` / `scope.topics`
 
@@ -31,7 +31,7 @@ description: "Search and archive significant global events (7-day window). Topic
 
 5. **原子化写入（Atomic Storage）**
    - 每条新闻单独写一条 `news` 记录（便于检索/RAG）
-   - 可选：另写一条 `news_digest` 作为本次运行元数据（run_id/窗口/覆盖缺口）
+   - 不写 `news_digest`，仅保留原子化条目
    - 使用 `recorder` 脚本：`record_jsonl.py --record-type news`
    - 推荐通过 `--extra` 写入结构化内容
 
@@ -44,28 +44,12 @@ description: "Search and archive significant global events (7-day window). Topic
 ```json
 {
   "type": "news_item",
-  "run_id": "uuid",
   "date": "YYYY-MM-DD",
   "category": "AI 自动判定（可随主题变化）",
   "summary": "...",
   "sources": [{"name":"...","url":"..."}],
   "entities": ["..."],
   "source_rank": "official|media|preprint"
-}
-```
-
-```json
-{
-  "type": "news_digest",
-  "run_id": "uuid",
-  "time_window": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD", "timezone": "local" },
-  "scope": {
-    "topics": ["国际冲突","贸易政策","中国政策","AI与Agent"],
-    "entities_watch": ["OpenAI","Google/DeepMind","阿里","字节","腾讯","智谱","清华相关实验室","幻方量化"]
-  },
-  "source_updates": [{"name":"...","domain":"...","added":"YYYY-MM-DD"}],
-  "dedupe": { "strategy": "semantic-title+date", "dropped": 0 },
-  "coverage_gap": ["..."]
 }
 ```
 

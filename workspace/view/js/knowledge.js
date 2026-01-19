@@ -16,19 +16,19 @@ function renderKnowledge(items) {
     card.className = 'card';
     const tags = Array.isArray(item.tags) ? item.tags : [];
     card.innerHTML = `
-      <div class="knowledge-title">${item.title || '(鏈懡鍚?'}</div>
+      <div class="knowledge-title">${item.title || '(未命名)'}</div>
       <div class="knowledge-meta">
         <span class="mono">${formatDateTime(item.timestamp)}</span>
         ${tags.map(t => `<span class="tag">${t}</span>`).join('')}
       </div>
       <div class="kv">
-        ${item.summary ? `<div class="kv-row"><div class="kv-key">鎽樿</div><div>${item.summary}</div></div>` : ''}
-        ${item.problem ? `<div class="kv-row"><div class="kv-key">闂</div><div>${item.problem}</div></div>` : ''}
-        ${item.symptom ? `<div class="kv-row"><div class="kv-key">鐜拌薄</div><div>${item.symptom}</div></div>` : ''}
-        ${item.root_cause ? `<div class="kv-row"><div class="kv-key">鏍瑰洜</div><div>${item.root_cause}</div></div>` : ''}
-        ${item.solution ? `<div class="kv-row"><div class="kv-key">瑙ｅ喅鏂规</div><div>${item.solution}</div></div>` : ''}
-        ${item.environment ? `<div class="kv-row"><div class="kv-key">鐜</div><div>${item.environment}</div></div>` : ''}
-        ${item.examples ? `<div class="kv-row"><div class="kv-key">绀轰緥</div><div>${toText(item.examples)}</div></div>` : ''}
+        ${item.summary ? `<div class="kv-row"><div class="kv-key">摘要</div><div>${item.summary}</div></div>` : ''}
+        ${item.problem ? `<div class="kv-row"><div class="kv-key">问题</div><div>${item.problem}</div></div>` : ''}
+        ${item.symptom ? `<div class="kv-row"><div class="kv-key">现象</div><div>${item.symptom}</div></div>` : ''}
+        ${item.root_cause ? `<div class="kv-row"><div class="kv-key">根因</div><div>${item.root_cause}</div></div>` : ''}
+        ${item.solution ? `<div class="kv-row"><div class="kv-key">解决方案</div><div>${item.solution}</div></div>` : ''}
+        ${item.environment ? `<div class="kv-row"><div class="kv-key">环境</div><div>${item.environment}</div></div>` : ''}
+        ${item.examples ? `<div class="kv-row"><div class="kv-key">示例</div><div>${toText(item.examples)}</div></div>` : ''}
       </div>
     `;
     list.appendChild(card);

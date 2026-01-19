@@ -43,7 +43,7 @@ description: "Search and archive significant global events (7-day window). Topic
 7. **News Fetch 自用 TODO**
    - 每次调用 News Fetch，都先基于模板更新 `workspace/records/news/news-fetch_todo_list.md`
    - 清单至少包含：分 Topic 检索、去重、写入 news、补充 coverage_gap、产出摘要
-   - 完成后将 TODO 归档到 `workspace/records/news/archive/YYYY/MM/DD_news-fetch_todo.md`
+   - 完成后将 TODO 归档到 `workspace/records/news/news_archive/YYYY/MM/DD_news-fetch_todo.md`
 
 8. **List / Set 文件位置**
    - 待看 list：`workspace/records/news/staging_candidates.jsonl`

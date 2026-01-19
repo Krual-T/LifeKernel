@@ -1,6 +1,6 @@
 ---
 name: news-fetch
-description: "Fetch latest news (recent 7 days) for international conflicts, trade policy, China policy, and AI/Agent updates; include specified companies/labs, dedupe against existing news records, and write a single news record via recorder."
+description: "Search and archive significant global events (7-day window). Topics: international conflicts, trade/China policy, and AI/Agent updates. Include entity tracking, semantic dedupe against news.jsonl, and atomic archival via recorder."
 ---
 
 # News Fetch
@@ -9,22 +9,29 @@ description: "Fetch latest news (recent 7 days) for international conflicts, tra
 
 ## 工作流（保持简洁）
 
-1. **确认范围**
+1. **动态日期锚定**
+   - 以系统当前日期为 T，窗口为 T-7 至 T（含首尾）
+
+2. **确认范围**
    - 默认范围：国际冲突、贸易政策、中国政策、AI/Agent
    - 默认关注实体：OpenAI、Google/DeepMind、阿里、字节、腾讯、智谱、清华相关实验室、幻方量化
    - 若用户提供新增实体或范围，加入 `scope.entities_watch` / `scope.topics`
 
-2. **检索与筛选**
-   - 必须使用 `web.run`，时间窗限定最近 7 天（以用户本地日期为准）
-   - 优先官方公告/权威媒体/论文平台（官方站点、政府网站、arXiv 等）
-   - 记录每条事件的标题、日期、类别、摘要、来源链接、相关实体
+3. **多路并行检索（按 Topic 拆分 Query）**
+   - 必须使用 `web.run`，时间窗限定最近 7 天
+   - 每个 topic 单独构建查询，避免热点霸屏
+   - AI 领域优先：公司官方博客/研究发布 + arXiv
+   - 政策领域优先：政府官网/央行/监管机构/权威媒体
 
-3. **去重**
-   - 从 `workspace/records/news/news.jsonl` 读取已有记录
-   - 以 `title + source + date` 为 key 去重（同类事件只保留最新/最权威来源）
+4. **语义去重（Smart Dedupe）**
+   - 读取 `workspace/records/news/news.jsonl` 历史记录
+   - 判定逻辑：标题相似度 > 0.8 且日期差异 <= 1 天 → 视为重复
+   - 来源权威度更高者优先保留
    - 写入 `dedupe` 字段（策略+剔除数量）
 
-4. **写入 news 记录（统一入口）**
+5. **原子化写入（Atomic Storage）**
+   - 每条新闻单独写一条 `news` 记录（便于检索/RAG）
+   - 可选：另写一条 `news_digest` 作为本次运行元数据（run_id/窗口/覆盖缺口）
    - 使用 `recorder` 脚本：`record_jsonl.py --record-type news`
    - 推荐通过 `--extra` 写入结构化内容
 
@@ -32,24 +39,28 @@ description: "Fetch latest news (recent 7 days) for international conflicts, tra
 
 ```json
 {
+  "type": "news_item",
+  "run_id": "uuid",
+  "date": "YYYY-MM-DD",
+  "category": "国际冲突|贸易政策|中国政策|AI公司|AI/Agent研究",
+  "summary": "...",
+  "sources": [{"name":"...","url":"..."}],
+  "entities": ["..."],
+  "source_rank": "official|media|preprint"
+}
+```
+
+```json
+{
   "type": "news_digest",
+  "run_id": "uuid",
   "time_window": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD", "timezone": "local" },
   "scope": {
     "topics": ["国际冲突","贸易政策","中国政策","AI与Agent"],
     "entities_watch": ["OpenAI","Google/DeepMind","阿里","字节","腾讯","智谱","清华相关实验室","幻方量化"]
   },
-  "items": [
-    {
-      "title": "...",
-      "date": "YYYY-MM-DD",
-      "category": "国际冲突|贸易政策|中国政策|AI公司|AI/Agent研究",
-      "summary": "...",
-      "sources": [{"name":"...","url":"..."}],
-      "entities": ["..."]
-    }
-  ],
   "source_updates": [{"name":"...","domain":"...","added":"YYYY-MM-DD"}],
-  "dedupe": { "strategy": "title+source+date", "dropped": 0 },
+  "dedupe": { "strategy": "semantic-title+date", "dropped": 0 },
   "coverage_gap": ["..."]
 }
 ```

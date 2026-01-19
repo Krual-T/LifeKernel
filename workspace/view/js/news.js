@@ -15,6 +15,20 @@ function normalizeSources(sources) {
 function flattenRecords(records) {
   const items = [];
   for (const rec of records) {
+    if (rec.type === 'news_item' || (!rec.items && rec.title && (rec.date || rec.timestamp))) {
+      items.push({
+        title: rec.title || '',
+        date: rec.date || formatDateShort(rec.timestamp || ''),
+        category: rec.category || '',
+        summary: rec.summary || '',
+        entities: Array.isArray(rec.entities) ? rec.entities : [],
+        sources: normalizeSources(rec.sources),
+        recordId: rec.id || '',
+        recordTitle: rec.run_id || rec.title || '',
+        recordTimestamp: rec.timestamp || ''
+      });
+      continue;
+    }
     const recordItems = Array.isArray(rec.items) ? rec.items : [];
     for (const item of recordItems) {
       items.push({
@@ -40,15 +54,20 @@ function renderMeta() {
     metaEl.textContent = 'No news records found.';
     return;
   }
+  const latestRun = [...allRecords].filter(r => r.type === 'news_digest').sort((a, b) => {
+    const ta = Date.parse(a.timestamp || '') || 0;
+    const tb = Date.parse(b.timestamp || '') || 0;
+    return tb - ta;
+  })[0];
   const latest = [...allRecords].sort((a, b) => {
     const ta = Date.parse(a.timestamp || '') || 0;
     const tb = Date.parse(b.timestamp || '') || 0;
     return tb - ta;
   })[0];
-  const window = latest.time_window ? `${latest.time_window.start || ''} ~ ${latest.time_window.end || ''}` : '';
+  const window = latestRun?.time_window ? `${latestRun.time_window.start || ''} ~ ${latestRun.time_window.end || ''}` : '';
   const count = allItems.length;
-  const gap = Array.isArray(latest.coverage_gap) && latest.coverage_gap.length ? ` | Gap: ${latest.coverage_gap.join('；')}` : '';
-  metaEl.textContent = `Latest: ${formatDateShort(latest.timestamp || '')} | Window: ${window} | Items: ${count}${gap}`;
+  const gap = Array.isArray(latestRun?.coverage_gap) && latestRun.coverage_gap.length ? ` | Gap: ${latestRun.coverage_gap.join('；')}` : '';
+  metaEl.textContent = `Latest: ${formatDateShort(latest?.timestamp || '')} | Window: ${window || 'n/a'} | Items: ${count}${gap}`;
 }
 
 function updateCategoryOptions(items) {

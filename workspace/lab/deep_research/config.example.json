@@ -1,0 +1,47 @@
+{
+  "project": "LifeKernel Deep Research",
+  "topic": "比较 LifeKernel 与主流多智能体框架在 coworker 能力上的差异",
+  "output_dir": "workspace/lab/deep_research/outputs",
+  "run_id": "sample-run",
+  "agents": [
+    {
+      "name": "planner",
+      "role": "Research Planner",
+      "goal": "将主题拆解为可执行的研究问题与路径",
+      "max_tokens": 1200
+    },
+    {
+      "name": "evidence",
+      "role": "Evidence Builder",
+      "goal": "基于输入与本地材料构建证据与要点",
+      "max_tokens": 1400
+    },
+    {
+      "name": "counterpoint",
+      "role": "Counterpoint Analyst",
+      "goal": "找出潜在反例、风险与不足",
+      "max_tokens": 1200
+    },
+    {
+      "name": "synthesizer",
+      "role": "Synthesis Writer",
+      "goal": "整合所有产出为结构化报告",
+      "max_tokens": 2000
+    }
+  ],
+  "tools": {
+    "local_search": {
+      "enabled": true,
+      "root": "D:/Projects/LifeKernel",
+      "ignore": [
+        "workspace/lab/deep_research/outputs",
+        ".git",
+        ".venv"
+      ]
+    }
+  },
+  "provider": {
+    "type": "mock",
+    "seed": 7
+  }
+}

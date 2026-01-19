@@ -61,6 +61,55 @@ def get_lifelog_path(timestamp: str) -> str:
     )
 
 
+def get_lifelog_path_from_id(record_id: str) -> str:
+    if not record_id or len(record_id) < 10:
+        raise SystemExit("lifelog update requires id with date prefix (YYYY-MM-DD-...)")
+    try:
+        dt = datetime.strptime(record_id[:10], "%Y-%m-%d")
+    except ValueError as exc:
+        raise SystemExit("lifelog update requires id with date prefix (YYYY-MM-DD-...)") from exc
+    return os.path.join(
+        "workspace",
+        "records",
+        "lifelog",
+        f"{dt:%Y}",
+        f"{dt:%m}",
+        f"{dt:%d}.jsonl",
+    )
+
+
+def get_record_path(record_type: str, record_id: str = "") -> str:
+    if record_type == "knowledge":
+        return os.path.join("workspace", "records", "knowledge", "knowledge.jsonl")
+    if record_type == "memory":
+        return os.path.join("workspace", "records", "memory", "memory.jsonl")
+    if record_type == "tasks":
+        return os.path.join("workspace", "records", "tasks", "tasks.jsonl")
+    if record_type == "lifelog":
+        return get_lifelog_path_from_id(record_id)
+    raise SystemExit(f"unsupported record type: {record_type}")
+
+
+def load_latest_record(path: str, record_id: str) -> dict:
+    if not os.path.exists(path):
+        raise SystemExit(f"record file not found: {path}")
+    latest = None
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if data.get("id") == record_id:
+                latest = data
+    if latest is None:
+        raise SystemExit(f"record id not found: {record_id}")
+    return latest
+
+
 def build_lifelog_entry(description: str, timestamp: str, module: str, skill_name: str,
                          source: str, status: str, related_files: list) -> dict:
     entry = {
@@ -79,7 +128,7 @@ def build_lifelog_entry(description: str, timestamp: str, module: str, skill_nam
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Unified JSONL recorder")
-    parser.add_argument("--record-type", required=True, choices=["knowledge", "lifelog", "memory", "tasks"])
+    parser.add_argument("--record-type", required=True, choices=["knowledge", "lifelog", "memory", "tasks", "update"])
     parser.add_argument("--timestamp", default=None)
     parser.add_argument("--id", dest="record_id", default=None)
     parser.add_argument("--module", default=None)
@@ -107,13 +156,43 @@ def main() -> None:
     parser.add_argument("--note", default=None)
 
     parser.add_argument("--extra", default=None, help="Extra JSON string to merge into record")
+    parser.add_argument("--target-type", default=None, choices=["knowledge", "lifelog", "memory", "tasks"])
+    parser.add_argument("--key", dest="update_key", default=None)
+    parser.add_argument("--value", dest="update_value", default=None)
+    parser.add_argument("--value-json", dest="update_value_json", default=None)
 
     args = parser.parse_args()
 
     timestamp = args.timestamp or iso_now()
     related_files = args.related_file
 
-    if args.record_type == "knowledge":
+    if args.record_type == "update":
+        if not args.target_type:
+            raise SystemExit("--target-type is required for update")
+        if not args.record_id:
+            raise SystemExit("--id is required for update")
+        if not args.update_key:
+            raise SystemExit("--key is required for update")
+        if args.update_value is None and args.update_value_json is None:
+            raise SystemExit("--value or --value-json is required for update")
+
+        path = get_record_path(args.target_type, args.record_id)
+        origin_data = load_latest_record(path, args.record_id)
+        if args.update_value_json:
+            try:
+                value = json.loads(args.update_value_json)
+            except json.JSONDecodeError as exc:
+                raise SystemExit("--value-json must be valid JSON") from exc
+        else:
+            value = args.update_value
+
+        updated = dict(origin_data)
+        updated[args.update_key] = value
+        if "timestamp" not in updated:
+            updated["timestamp"] = timestamp
+        append_jsonl(path, updated)
+
+    elif args.record_type == "knowledge":
         record = {
             "title": args.title,
             "summary": args.summary,

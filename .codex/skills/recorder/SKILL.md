@@ -17,6 +17,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 ## 输入
 
 - record_type：`knowledge` | `lifelog` | `memory` | `tasks`
+- update：支持按 `id + key + value` 追加更新记录（append-only）
 - data：记录内容（按各自 schema）
 - related_files：相关文件路径（可选）
 - auto_record：是否自动写入 lifelog（默认：对 knowledge 为 `true`）
@@ -42,6 +43,26 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
    - 当 record_type = knowledge 且 auto_record = true 时，追加一条 lifelog
 5. **必要时更新可视化**
    - knowledge/lifelog/tasks：`workspace/view/index.html`
+
+## 更新记录（append-only）
+
+用于在 JSONL 中“追加更新”某条记录：读取同 id 的最新记录，生成 `{**origin_data, key: value}` 并追加写入。
+
+参数：
+- record_type：`update`
+- target_type：`knowledge` | `lifelog` | `memory` | `tasks`
+- id：目标记录 id
+- key：需要更新的字段名
+- value / value_json：更新值（字符串或 JSON）
+
+示例（PowerShell）：
+```powershell
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type tasks --id "2026-01-19-1010-datgs-domain" --key status --value "completed"
+```
+
+```powershell
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type knowledge --id "2026-01-19-1010-coworker-research" --key tags --value-json "[\"coworker\",\"research\"]"
+```
 
 ## 脚本（推荐）
 

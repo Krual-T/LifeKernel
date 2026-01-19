@@ -488,7 +488,6 @@ export function initLogs(statusEl) {
   const nameInput = document.getElementById('logNameFilter');
   if (!nameInput) return;
   const loadMoreBtn = document.getElementById('logLoadMore');
-  const jumpBtn = document.getElementById('logJumpBtn');
   const jumpInput = document.getElementById('logJumpDate');
 
   const debouncedLogFilter = debounce(async () => {
@@ -531,8 +530,8 @@ export function initLogs(statusEl) {
     }
   }
 
-  if (jumpBtn && jumpInput) {
-    jumpBtn.addEventListener('click', async () => {
+  if (jumpInput) {
+    jumpInput.addEventListener('change', async () => {
       await jumpToDate(jumpInput.value || null);
     });
   }

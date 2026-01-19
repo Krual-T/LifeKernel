@@ -9,29 +9,28 @@
       </div>
     </div>
     <div class="filter-panel log-filter-panel">
-      <div class="filter-row">
+      <div class="filter-row log-filter-grid">
         <div class="filter-field filter-text">
-          <label for="logNameFilter">Keyword</label>
-          <input type="text" id="logNameFilter" placeholder="Log description" />
-        </div>
-        <div class="filter-field filter-date">
-          <label for="logJumpDate">Jump to</label>
-          <input type="date" id="logJumpDate" />
-        </div>
-        <div class="filter-field">
-          <label>&nbsp;</label>
-          <div class="filter-actions">
-            <button type="button" id="logJumpBtn">Jump</button>
+          <label class="sr-only" for="logNameFilter">Keyword</label>
+          <div class="input-with-icon">
+            <span class="input-icon" aria-hidden="true">🔍</span>
+            <input type="text" id="logNameFilter" placeholder="Keyword (log description)" aria-label="Keyword" />
           </div>
         </div>
+        <div class="filter-field filter-date">
+          <label for="logJumpDate">Date</label>
+          <input type="date" id="logJumpDate" />
+        </div>
       </div>
-      <div class="filter-row">
+      <div class="filter-row log-actions-row">
         <div class="filter-field timeline-field">
           <label>Timeline</label>
           <div class="filter-actions timeline-actions">
-            <span id="logTimelineCount" class="muted">Showing 0 / 0</span>
             <button type="button" id="logLoadMore" class="button-secondary">Load more</button>
           </div>
+        </div>
+        <div class="log-status">
+          <span id="logTimelineCount" class="muted">Showing 0 / 0</span>
         </div>
       </div>
     </div>

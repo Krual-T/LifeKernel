@@ -9,5 +9,5 @@ description = "LifeKernel project"
 requires-python = ">=3.10"
 dependencies = []
 
-[tool.uv]
+# [tool.uv]
 # uv will use this project for dependency resolution

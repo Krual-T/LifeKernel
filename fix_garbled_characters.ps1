@@ -1,4 +1,5 @@
 # Setup-UTF8PowerShellProfile.ps1
+# Windows only. For Linux, use fix_garbled_characters.sh
 $utf8Config = @'
 # 设置控制台使用 UTF-8 编码（无 BOM）
 chcp 65001 | Out-Null

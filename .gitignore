@@ -1,6 +1,6 @@
 # Existing
 PowerShell-7.5.4-win-x64.msi
-
+.env
 # Python
 __pycache__/
 *.py[cod]

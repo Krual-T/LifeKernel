@@ -73,3 +73,22 @@ Details: ?? + ??
 
 - ??????????
 - ?????????
+
+## Linux 示例
+
+```bash
+python ./scripts/task_cli.py create --title "准备 Q1 报告" --priority high --due-time "2026-01-18T17:00:00+08:00" --module work
+```
+
+```bash
+python ./scripts/task_cli.py update --id 2026-01-18-0000-send-file --status done
+```
+
+```bash
+python ./scripts/task_cli.py delete --id 2026-01-18-0000-send-file
+```
+
+```bash
+python ./scripts/task_cli.py get --id 2026-01-18-0000-send-file
+python ./scripts/task_cli.py list --status pending
+```

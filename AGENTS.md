@@ -1,8 +1,8 @@
 # LifeKernel｜Codex 执行规范（可拓展范式）
 
 ## 1. 角色与边界
-1. 项目名称：**LifeKernel**；运行环境：**Windows + Codex CLI**。
-2. Windows 上使用 **PowerShell 7（pwsh）** 作为默认终端。
+1. 项目名称：**LifeKernel**；运行环境：**Windows or Linux + Codex CLI**。
+2. Windows 使用 **PowerShell 7（pwsh）**；Linux 使用 **bash** 作为默认终端。
 3. 目录结构（示例）：
    ```text
    D:\Projects\LifeKernel\

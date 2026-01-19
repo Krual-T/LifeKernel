@@ -22,7 +22,7 @@ description: 在对话中识别可复用流程并提议沉淀为 skill。适用�
    - 向用户征求创建/更新确认。
 
 3. 创建或更新（确认后）
-   - 路径：`D:\\Projects\\LifeKernel\\.codex\\skills\\<skill-name>\\SKILL.md`
+   - 路径：`.codex/skills/<skill-name>/SKILL.md`（Windows/Linux 通用）
    - 必含：简述、适用场景、输入（Input）、输出（Output）、步骤（Steps）。
 
 4. 说明与回执
@@ -33,4 +33,3 @@ description: 在对话中识别可复用流程并提议沉淀为 skill。适用�
 
 - 未经明确同意不得改动 skills。
 - 内容简洁、结构清晰。
-

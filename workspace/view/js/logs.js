@@ -23,6 +23,28 @@ const timelineState = {
   lastDate: null
 };
 
+function getBeijingDateUTC() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const year = Number(parts.find(p => p.type === 'year')?.value || '1970');
+  const month = Number(parts.find(p => p.type === 'month')?.value || '01') - 1;
+  const day = Number(parts.find(p => p.type === 'day')?.value || '01');
+  return new Date(Date.UTC(year, month, day));
+}
+
+function getDefaultRangeDays(days) {
+  const endDate = getBeijingDateUTC();
+  const startDate = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
+  if (days > 0) {
+    startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
+  }
+  return { start: formatDateUTC(startDate), end: formatDateUTC(endDate) };
+}
+
 function groupByDate(entries) {
   const grouped = [];
   let lastDate = null;
@@ -447,5 +469,8 @@ export function initLogs(statusEl) {
     setLifelogView('timeline');
   }
 
-  loadAllLifelog(statusEl);
+  const { start, end } = getDefaultRangeDays(3);
+  lifelogRangeKey = `${start}..${end}`;
+  lifelogSource = 'range';
+  loadLifelogByRange(start, end, statusEl);
 }

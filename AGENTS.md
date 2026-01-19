@@ -71,23 +71,23 @@
 **统一入口**：所有记录类数据必须通过 `record-jsonl-unified` 写入；不要手写 JSONL。
 
 #### 4.4.1 任务管理
-- **进行中任务**：`workspace/tasks/task_list.md`
-- **完成记录**：`workspace/tasks/task_log/YYYY/MM/DD.jsonl`
+- **进行中任务**：`workspace/records/tasks/task_list.md`
+- **完成记录**：`workspace/records/tasks/task_log/YYYY/MM/DD.jsonl`
 - 进行中任务用 Markdown 列表；完成后写入 JSONL 归档。
 - 展示未完成任务时使用**卡片风格**。
 
 #### 4.4.2 Lifelog（操作记录）
-- 路径：`workspace/lifelog/YYYY/MM/DD.jsonl`
+- 路径：`workspace/records/lifelog/YYYY/MM/DD.jsonl`
 - 每完成一个动作自动写入一条记录。
 - 记录描述统一中文。
 
 #### 4.4.3 记忆（assistant 私有）
-- 路径：`workspace/memory/`
+- 路径：`workspace/records/memory/`
 - 用于记录偏好、决策与上下文（仅内部使用）。
 - 记录内容统一中文。
 
 ### 4.5 知识与想法
-- 知识与想法统一写入 `workspace/knowledge/knowledge.jsonl`。
+- 知识与想法统一写入 `workspace/records/knowledge/knowledge.jsonl`。
 - 头脑风暴/想法记录统一加 `tags: idea, brainstorm`。
 
 ### 4.6 视图与可视化

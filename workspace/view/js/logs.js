@@ -151,8 +151,13 @@ function normalizeListingHref(href) {
   }
   clean = clean.replace(/\\/g, '/');
   if (clean.startsWith('/')) clean = clean.slice(1);
-  const idx = clean.indexOf('lifelog/');
-  if (idx >= 0) clean = clean.slice(idx + 'lifelog/'.length);
+  const idxRecords = clean.indexOf('records/lifelog/');
+  if (idxRecords >= 0) {
+    clean = clean.slice(idxRecords + 'records/lifelog/'.length);
+  } else {
+    const idx = clean.indexOf('lifelog/');
+    if (idx >= 0) clean = clean.slice(idx + 'lifelog/'.length);
+  }
   return clean;
 }
 
@@ -163,7 +168,7 @@ function extractListingHrefs(html) {
   if (single.length > 0) return single;
   const dataHrefs = Array.from(html.matchAll(/data-href="([^"]+)"/g)).map(m => m[1]);
   if (dataHrefs.length > 0) return dataHrefs;
-  const paths = Array.from(html.matchAll(/\/workspace\/lifelog\/(\d{4}\/\d{2}\/\d{2}\.jsonl)/g)).map(m => m[1]);
+  const paths = Array.from(html.matchAll(/\/workspace\/records\/lifelog\/(\d{4}\/\d{2}\/\d{2}\.jsonl)/g)).map(m => m[1]);
   if (paths.length > 0) return paths;
   return [];
 }
@@ -178,7 +183,7 @@ function normalizeDirToken(value, length) {
 function getLifelogBases() {
   const path = location.pathname || '';
   const root = path.includes('/workspace/') ? '/workspace/' : '/';
-  return [`${root}lifelog/`, '../lifelog/'];
+  return [`${root}records/lifelog/`, '../records/lifelog/'];
 }
 
 async function tryListFilesFromDirectory() {
@@ -247,7 +252,7 @@ async function getLifelogFileIndex() {
 }
 
 async function loadLifelogByFiles(files, base, statusEl) {
-  const baseDir = base || lifelogBase || '../lifelog/';
+  const baseDir = base || lifelogBase || '../records/lifelog/';
   if (!files || files.length === 0) {
     allLifelog = [];
     applyLogFilters();
@@ -287,7 +292,7 @@ async function resolveLifelogBaseByProbe(file) {
       // ignore and continue
     }
   }
-  return '../lifelog/';
+  return '../records/lifelog/';
 }
 
 async function loadLifelogByRange(start, end, statusEl) {

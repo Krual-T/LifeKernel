@@ -29,10 +29,10 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 ## 统一步骤
 
 1. **确定目标路径**
-   - knowledge：`workspace/knowledge/knowledge.jsonl`
-   - lifelog：`workspace/lifelog/YYYY/MM/DD.jsonl`
-   - memory：`workspace/memory/memory.jsonl`
-   - tasks：`workspace/tasks/tasks.jsonl`
+   - knowledge：`workspace/records/knowledge/knowledge.jsonl`
+   - lifelog：`workspace/records/lifelog/YYYY/MM/DD.jsonl`
+   - memory：`workspace/records/memory/memory.jsonl`
+   - tasks：`workspace/records/tasks/tasks.jsonl`
 2. **生成记录对象**
    - 统一字段建议：`id`、`timestamp`、`source`、`module`、`related_files`
    - 业务字段按 record_type schema 补充

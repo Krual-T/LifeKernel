@@ -129,10 +129,10 @@ function applyTaskFilters() {
 export async function loadTasks(statusEl) {
   try {
     const candidates = [
-      '../tasks/tasks.jsonl',
-      './tasks/tasks.jsonl',
-      '/tasks/tasks.jsonl',
-      '/workspace/tasks/tasks.jsonl'
+      '../records/tasks/tasks.jsonl',
+      './records/tasks/tasks.jsonl',
+      '/records/tasks/tasks.jsonl',
+      '/workspace/records/tasks/tasks.jsonl'
     ];
     const result = await fetchFirst(candidates);
     const text = await result.res.text();

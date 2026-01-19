@@ -53,6 +53,7 @@ def get_lifelog_path(timestamp: str) -> str:
         dt = datetime.now().astimezone()
     return os.path.join(
         "workspace",
+        "records",
         "lifelog",
         f"{dt:%Y}",
         f"{dt:%m}",
@@ -136,7 +137,7 @@ def main() -> None:
         record["id"] = record_id
         if args.extra:
             record.update(json.loads(args.extra))
-        append_jsonl(os.path.join("workspace", "knowledge", "knowledge.jsonl"), record)
+        append_jsonl(os.path.join("workspace", "records", "knowledge", "knowledge.jsonl"), record)
 
         auto_record = True
         if args.no_auto_record:
@@ -153,7 +154,7 @@ def main() -> None:
                 skill_name="record-jsonl-unified",
                 source=args.source or "conversation",
                 status="completed",
-                related_files=["workspace/knowledge/knowledge.jsonl"],
+                related_files=["workspace/records/knowledge/knowledge.jsonl"],
             )
             append_jsonl(get_lifelog_path(timestamp), lifelog_entry)
 
@@ -189,7 +190,7 @@ def main() -> None:
             record["related_files"] = related_files
         if args.extra:
             record.update(json.loads(args.extra))
-        append_jsonl(os.path.join("workspace", "memory", "memory.jsonl"), record)
+        append_jsonl(os.path.join("workspace", "records", "memory", "memory.jsonl"), record)
 
     else:  # tasks
         record = {
@@ -211,7 +212,7 @@ def main() -> None:
             record["related_files"] = related_files
         if args.extra:
             record.update(json.loads(args.extra))
-        append_jsonl(os.path.join("workspace", "tasks", "tasks.jsonl"), record)
+        append_jsonl(os.path.join("workspace", "records", "tasks", "tasks.jsonl"), record)
 
 
 if __name__ == "__main__":

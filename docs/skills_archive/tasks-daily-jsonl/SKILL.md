@@ -1,13 +1,13 @@
 ---
 name: tasks-daily-jsonl
-description: 用 JSONL 管理任务，数据存储在 workspace/tasks/tasks.jsonl，提供 Python CLI 完成增删改查。
+description: 用 JSONL 管理任务，数据存储在 workspace/records/tasks/tasks.jsonl，提供 Python CLI 完成增删改查。
 ---
 
 # 任务管理（JSONL）
 
 ## 概述
 
-`workspace/tasks/tasks.jsonl` 作为任务主数据文件，JSONL 每行一条记录（append-only）。
+`workspace/records/tasks/tasks.jsonl` 作为任务主数据文件，JSONL 每行一条记录（append-only）。
 
 ## 字段约定（核心）
 
@@ -92,7 +92,7 @@ Details: 资料整理 + 初稿输出
 ## 关联可视化
 
 - `workspace/view/index.html`
-- `workspace/tasks/tasks.jsonl`
+- `workspace/records/tasks/tasks.jsonl`
 
 ## 注意事项
 

@@ -8,7 +8,7 @@ function renderKnowledge(items) {
   if (!list) return;
   list.innerHTML = '';
   if (items.length === 0) {
-    list.innerHTML = '<div class="empty muted">鏆傛棤鐭ヨ瘑鍗＄墖銆?/div>';
+    list.innerHTML = '<div class="empty muted">暂无知识卡片。</div>';
     return;
   }
   for (const item of items) {
@@ -51,7 +51,7 @@ function applyKnowledgeFilters() {
 function getKnowledgeBase() {
   const path = location.pathname || '';
   const root = path.includes('/workspace/') ? '/workspace/' : '/';
-  return `${root}knowledge/knowledge.jsonl`;
+  return `${root}records/knowledge/knowledge.jsonl`;
 }
 
 async function loadKnowledge() {

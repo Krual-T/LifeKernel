@@ -1,13 +1,13 @@
 ---
 name: lifelog-daily-jsonl
-description: 以 JSONL 方式记录 lifelog 到 workspace/lifelog/YYYY/MM/DD.jsonl，按日期分文件，便于追踪与归档。
+description: 以 JSONL 方式记录 lifelog 到 workspace/records/lifelog/YYYY/MM/DD.jsonl，按日期分文件，便于追踪与归档。
 ---
 
 # Lifelog 日志（JSONL）
 
 ## 概述
 
-将操作日志按日期追加写入 `workspace/lifelog/YYYY/MM/DD.jsonl`，每行一条记录（append-only）。
+将操作日志按日期追加写入 `workspace/records/lifelog/YYYY/MM/DD.jsonl`，每行一条记录（append-only）。
 
 ## 记录规则
 
@@ -30,12 +30,12 @@ description: 以 JSONL 方式记录 lifelog 到 workspace/lifelog/YYYY/MM/DD.jso
 
 Windows（PowerShell）：
 ```powershell
-python .\scripts\append_lifelog.py --description "修复 UTF-8 无 BOM" --module work --skill-name lifelog-daily-jsonl --related-files workspace/lifelog/2026/01/18.jsonl
+python .\scripts\append_lifelog.py --description "修复 UTF-8 无 BOM" --module work --skill-name lifelog-daily-jsonl --related-files workspace/records/lifelog/2026/01/18.jsonl
 ```
 
 Linux（bash）：
 ```bash
-python ./scripts/append_lifelog.py --description "修复 UTF-8 无 BOM" --module work --skill-name lifelog-daily-jsonl --related-files workspace/lifelog/2026/01/18.jsonl
+python ./scripts/append_lifelog.py --description "修复 UTF-8 无 BOM" --module work --skill-name lifelog-daily-jsonl --related-files workspace/records/lifelog/2026/01/18.jsonl
 ```
 
 ## JSONL 字段建议

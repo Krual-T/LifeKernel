@@ -50,7 +50,7 @@ $scriptPath = Join-Path $PSScriptRoot 'notify.ps1'
 
 ## 记录路径（避免误写）
 
-- 所有操作记录写入：`workspace/lifelog/YYYY/MM/DD.jsonl`
+- 所有操作记录写入：`workspace/records/lifelog/YYYY/MM/DD.jsonl`
 - 任务清单与完成记录路径以 `tasks-daily-jsonl` 为准
 
 ## 通用命令模板（当前用户会话）

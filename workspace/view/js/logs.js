@@ -25,6 +25,19 @@ const timelineState = {
   lastDate: null
 };
 
+function getBeijingDateUTC() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const year = Number(parts.find(p => p.type === 'year')?.value || '1970');
+  const month = Number(parts.find(p => p.type === 'month')?.value || '01') - 1;
+  const day = Number(parts.find(p => p.type === 'day')?.value || '01');
+  return new Date(Date.UTC(year, month, day));
+}
+
 function groupByDate(entries) {
   const grouped = [];
   let lastDate = null;
@@ -406,9 +419,9 @@ async function ensureLifelogLoaded(start, end, statusEl) {
 }
 
 function setLogRangeDays(days) {
-  const today = new Date();
-  const end = formatDateUTC(today);
-  const startDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  const todayUTC = getBeijingDateUTC();
+  const end = formatDateUTC(todayUTC);
+  const startDate = new Date(Date.UTC(todayUTC.getUTCFullYear(), todayUTC.getUTCMonth(), todayUTC.getUTCDate()));
   if (days > 0) {
     startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
   }
@@ -420,9 +433,9 @@ function setLogRangeDays(days) {
 }
 
 function initLogDefaults() {
-  const today = new Date();
-  const end = formatDateUTC(today);
-  const startDate = new Date(Date.UTC(today.getUTCFullYear() - 1, today.getUTCMonth(), today.getUTCDate()));
+  const todayUTC = getBeijingDateUTC();
+  const end = formatDateUTC(todayUTC);
+  const startDate = new Date(Date.UTC(todayUTC.getUTCFullYear() - 1, todayUTC.getUTCMonth(), todayUTC.getUTCDate()));
   const start = formatDateUTC(startDate);
   const startInput = document.getElementById('logDateStart');
   const endInput = document.getElementById('logDateEnd');

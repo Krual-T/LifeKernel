@@ -8,7 +8,7 @@ __pycache__/
 *.pyd
 *.so
 *.egg-info/
-
+node_modules
 # Virtual environments
 .venv/
 venv/
@@ -33,3 +33,6 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Lab outputs
+workspace/lab/

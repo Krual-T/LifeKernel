@@ -50,6 +50,8 @@ def get_lifelog_path(timestamp: str) -> str:
 def get_record_path(record_type: str, record_id: str = "") -> str:
     if record_type == "knowledge":
         return os.path.join("workspace", "records", "knowledge", "knowledge.jsonl")
+    if record_type == "news":
+        return os.path.join("workspace", "records", "news", "news.jsonl")
     if record_type == "memory":
         return os.path.join("workspace", "records", "memory", "memory.jsonl")
     if record_type == "tasks":
@@ -158,7 +160,7 @@ def build_lifelog_entry(description: str, timestamp: str, module: str, skill_nam
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Unified JSONL recorder")
-    parser.add_argument("--record-type", required=True, choices=["knowledge", "lifelog", "memory", "tasks", "update", "delete"])
+    parser.add_argument("--record-type", required=True, choices=["knowledge", "news", "lifelog", "memory", "tasks", "update", "delete"])
     parser.add_argument("--timestamp", default=None)
     parser.add_argument("--id", dest="record_id", default=None)
     parser.add_argument("--module", default=None)
@@ -186,7 +188,7 @@ def main() -> None:
     parser.add_argument("--note", default=None)
 
     parser.add_argument("--extra", default=None, help="Extra JSON string to merge into record")
-    parser.add_argument("--target-type", default=None, choices=["knowledge", "lifelog", "memory", "tasks"])
+    parser.add_argument("--target-type", default=None, choices=["knowledge", "news", "lifelog", "memory", "tasks"])
     parser.add_argument("--key", dest="update_key", default=None)
     parser.add_argument("--value", dest="update_value", default=None)
     parser.add_argument("--value-json", dest="update_value_json", default=None)
@@ -285,6 +287,44 @@ def main() -> None:
                 source=args.source or "conversation",
                 status="completed",
                 related_files=["workspace/records/knowledge/knowledge.jsonl"],
+            )
+            append_jsonl(get_lifelog_path(timestamp), lifelog_entry)
+
+    elif args.record_type == "news":
+        record = {
+            "title": args.title,
+            "summary": args.summary,
+            "tags": parse_list(args.tags),
+        }
+        record = {k: v for k, v in record.items() if v not in (None, "", [])}
+        record["timestamp"] = timestamp
+        record["module"] = args.module or "news"
+        if args.source:
+            record["source"] = args.source
+        if related_files:
+            record["related_files"] = related_files
+        record_id = args.record_id or generate_id()
+        record["id"] = record_id
+        if args.extra:
+            record.update(json.loads(args.extra))
+        append_jsonl(os.path.join("workspace", "records", "news", "news.jsonl"), record)
+
+        auto_record = True
+        if args.no_auto_record:
+            auto_record = False
+        elif args.auto_record:
+            auto_record = True
+        if auto_record:
+            desc_seed = args.title or args.summary or "未命名"
+            description = f"新增 news：{desc_seed}"
+            lifelog_entry = build_lifelog_entry(
+                description=description,
+                timestamp=timestamp,
+                module=args.module or "news",
+                skill_name="recorder",
+                source=args.source or "conversation",
+                status="completed",
+                related_files=["workspace/records/news/news.jsonl"],
             )
             append_jsonl(get_lifelog_path(timestamp), lifelog_entry)
 

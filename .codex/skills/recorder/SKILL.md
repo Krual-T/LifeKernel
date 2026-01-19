@@ -16,7 +16,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 ## 输入
 
-- record_type：`knowledge` | `lifelog` | `memory` | `tasks` | `update` | `delete`
+- record_type：`knowledge` | `news` | `lifelog` | `memory` | `tasks` | `update` | `delete`
 - update：按 `id + key + value` 查询记录后就地更新（覆盖写入）
 - delete：按 `id` 查询记录后删除
 - data：记录内容（按各自 schema）
@@ -32,6 +32,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 1. **确定目标路径**
    - knowledge：`workspace/records/knowledge/knowledge.jsonl`
+   - news：`workspace/records/news/news.jsonl`
    - lifelog：`workspace/records/lifelog/YYYY/MM/DD.jsonl`
    - memory：`workspace/records/memory/memory.jsonl`
    - tasks：`workspace/records/tasks/tasks.jsonl`
@@ -45,6 +46,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
    - 当 record_type = knowledge 且 auto_record = true 时，追加一条 lifelog
 5. **必要时更新可视化**
    - knowledge/lifelog/tasks：`workspace/view/index.html`
+   - news：`workspace/view/news.html`
 
 ## 更新记录（CRUD）
 
@@ -52,14 +54,14 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 参数：
 - record_type：`update`
-- target_type：`knowledge` | `lifelog` | `memory` | `tasks`
+- target_type：`knowledge` | `news` | `lifelog` | `memory` | `tasks`
 - id：目标记录 id
 - key：需要更新的字段名
 - value / value_json：更新值（字符串或 JSON）
 
 示例（PowerShell，更新）：
 ```powershell
-python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type tasks --id "b3e9c6b0-9f5f-47ff-8d62-1f5f8b7f2a1c" --key status --value "completed"
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type tasks --id "b3e9c6b0-9f5f-47ff-8d62-1f5f8b7f2a1c" --key status --value "done"
 ```
 
 ```powershell

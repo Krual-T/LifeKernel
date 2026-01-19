@@ -5,11 +5,11 @@
 2. Windows 使用 **PowerShell 7（pwsh）**；Linux 使用 **bash** 作为默认终端。
 3. 目录结构（示例）：
    ```text
-   D:\Projects\LifeKernel\
-   ├─ workspace\            # 主要工作区
-   ├─ .codex\
-   │  └─ skills\            # 项目内技能库
-   └─ docs\                 # 文档与设计说明
+   D:/Projects/LifeKernel/
+   ├─ workspace/            # 主要工作区
+   ├─ .codex/
+   │  └─ skills/            # 项目内技能库
+   └─ docs/                 # 文档与设计说明
    ```
 4. 权限与安全（必须遵守）：
    - 禁止操作系统目录（如 `C:\Windows`、`C:\Program Files`）。
@@ -108,6 +108,6 @@
 ---
 
 ## 6. 初始化检查（每次会话开始时）
-1. 检查 `.codex\skills` 与 `workspace` 是否存在。
+1. 检查 `.codex/skills` 与 `workspace` 是否存在。
 2. 提示已存在的 skills 与记录文件（简要概览）。
 3. 用 3–5 句话总结：目标理解 + 本次优先事项。

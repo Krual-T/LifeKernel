@@ -6,7 +6,12 @@
 
 ## 推荐写入方式
 - 使用统一记录脚本：
-  - `python .\.codex\skills\record-jsonl-unified\scripts\record_jsonl.py --record-type knowledge ...`
+  - Windows（PowerShell）：
+    - `python .\.codex\skills\record-jsonl-unified\scripts\record_jsonl.py --record-type knowledge ...`
+  - Linux（bash）：
+    - `python ./.codex/skills/record-jsonl-unified/scripts/record_jsonl.py --record-type knowledge ...`
+  - 或统一使用 `uv run`：
+    - `uv run python ./.codex/skills/record-jsonl-unified/scripts/record_jsonl.py --record-type knowledge ...`
 - 默认开启 auto record：写入 knowledge 时会自动追加一条 lifelog。
 
 ## 可视化入口

@@ -1,0 +1,8 @@
+{
+  "name": "lifekernel-deep-research",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@openai/codex-sdk": "*"
+  }
+}

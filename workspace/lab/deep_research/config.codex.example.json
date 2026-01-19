@@ -1,0 +1,44 @@
+{
+  "project": "LifeKernel Deep Research (Codex)",
+  "topic": "比较 LifeKernel 与主流多智能体框架在 coworker 能力上的差异",
+  "output_dir": "workspace/lab/deep_research/outputs",
+  "run_id": "codex-run",
+  "agents": [
+    {
+      "name": "planner",
+      "role": "Research Planner",
+      "goal": "将主题拆解为可执行的研究问题与路径"
+    },
+    {
+      "name": "evidence",
+      "role": "Evidence Builder",
+      "goal": "基于输入与本地材料构建证据与要点"
+    },
+    {
+      "name": "counterpoint",
+      "role": "Counterpoint Analyst",
+      "goal": "找出潜在反例、风险与不足"
+    },
+    {
+      "name": "synthesizer",
+      "role": "Synthesis Writer",
+      "goal": "整合所有产出为结构化报告"
+    }
+  ],
+  "tools": {
+    "local_search": {
+      "enabled": true,
+      "root": "D:/Projects/LifeKernel",
+      "ignore": [
+        "workspace/lab/deep_research/outputs",
+        ".git",
+        ".venv"
+      ],
+      "max_files": 200,
+      "max_bytes": 1000000
+    }
+  },
+  "provider": {
+    "type": "codex"
+  }
+}

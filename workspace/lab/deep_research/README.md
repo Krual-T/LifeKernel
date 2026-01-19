@@ -39,6 +39,25 @@ workspace/lab/deep_research/outputs/<run_id>/
   └─ run_meta.json
 ```
 
+## 使用 Codex SDK（多智能体写作）
+
+1) 安装依赖
+```powershell
+npm install
+```
+
+2) 复制 Codex 配置
+```powershell
+Copy-Item .\\config.codex.example.json .\\config.codex.json
+```
+
+3) 运行（Codex SDK）
+```powershell
+node .\\codex_orchestrator.mjs .\\config.codex.json
+```
+
+> 说明：Codex SDK 需 Node.js 18+，认证方式与可用模型请遵循官方文档配置。
+
 ## 设计要点
 
 - 多智能体：按角色拆解任务，异步并发执行，再统一汇总。

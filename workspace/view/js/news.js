@@ -79,9 +79,23 @@ function updateCategoryOptions(items) {
   if (existing) select.value = existing;
 }
 
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function formatSources(sources) {
   if (!sources || !sources.length) return '';
-  return sources.map(s => s.url ? `${s.name} (${s.url})` : s.name).join(' | ');
+  return sources.map(s => {
+    const name = escapeHtml(s.name || s.url || '');
+    const url = escapeHtml(s.url || '');
+    if (!url) return name;
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${name || url}</a>`;
+  }).join(' | ');
 }
 
 function groupByDate(items) {

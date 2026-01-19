@@ -1,9 +1,9 @@
 ---
 name: recorder
-description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录技巧，支持新增/更新/删除（CRUD）、UUID 自动 id 与 auto record 到 lifelog。
+description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL 记录技巧，支持新增/更新/删除（CRUD）、UUID 自动 id 与 auto record 到 lifelog。
 ---
 
-# 统一 JSONL 记录（knowledge / lifelog / memory / tasks）
+# 统一 JSONL 记录（knowledge / news / lifelog / memory / tasks）
 
 ## 概述
 
@@ -11,7 +11,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 ## 适用场景
 
-- 新增或更新 knowledge、lifelog、memory、tasks 等记录类数据
+- 新增或更新 knowledge、news、lifelog、memory、tasks 等记录类数据
 - 希望自动化记录并保持结构统一
 
 ## 输入

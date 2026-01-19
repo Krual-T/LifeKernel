@@ -142,7 +142,7 @@ function renderList(items) {
         </div>
         ${item.summary ? `<div class="section">${item.summary}</div>` : ''}
         ${entities ? `<div class="section">${entities}</div>` : ''}
-        ${sources ? `<div class="source-list">${sources}</div>` : ''}
+        
       </div>
     `);
   }

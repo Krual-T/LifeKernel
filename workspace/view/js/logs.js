@@ -8,9 +8,7 @@ import {
   formatTimeShort,
   formatDateTime,
   toText,
-  debounce,
-  setActiveButton,
-  clearActiveButtons
+  debounce
 } from './common.js';
 
 let allLifelog = [];
@@ -24,19 +22,6 @@ const timelineState = {
   rendered: 0,
   lastDate: null
 };
-
-function getBeijingDateUTC() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).formatToParts(new Date());
-  const year = Number(parts.find(p => p.type === 'year')?.value || '1970');
-  const month = Number(parts.find(p => p.type === 'month')?.value || '01') - 1;
-  const day = Number(parts.find(p => p.type === 'day')?.value || '01');
-  return new Date(Date.UTC(year, month, day));
-}
 
 function groupByDate(entries) {
   const grouped = [];
@@ -166,13 +151,11 @@ function renderLifelogTable(entries) {
 }
 
 function applyLogFilters() {
-  const startInput = document.getElementById('logDateStart');
-  const endInput = document.getElementById('logDateEnd');
   const nameInput = document.getElementById('logNameFilter');
   if (!nameInput) return;
 
-  const start = startInput?.value || null;
-  const end = endInput?.value || null;
+  const start = null;
+  const end = null;
   const name = (nameInput.value || '').trim().toLowerCase();
 
   const logs = allLifelog.filter(e => {
@@ -198,10 +181,6 @@ function setLogLoading(isLoading, message) {
     logLoadingEl.style.display = isLoading ? 'block' : 'none';
     logLoadingEl.textContent = message || '';
   }
-  const startInput = document.getElementById('logDateStart');
-  const endInput = document.getElementById('logDateEnd');
-  if (startInput) startInput.disabled = isLoading;
-  if (endInput) endInput.disabled = isLoading;
 }
 
 function normalizeListingHref(href) {
@@ -392,56 +371,14 @@ async function loadAllLifelog(statusEl) {
   } catch (e) {
     allLifelog = [];
     applyLogFilters();
-    if (statusEl) statusEl.textContent = 'Cannot list lifelog files. Use date range to load.';
-    const start = document.getElementById('logDateStart')?.value || null;
-    const end = document.getElementById('logDateEnd')?.value || null;
-    if (start && end) {
-      await loadLifelogByRange(start, end, statusEl);
-      lifelogSource = 'range';
-      lifelogRangeKey = `${start}..${end}`;
-    }
+    if (statusEl) statusEl.textContent = 'Cannot list lifelog files. Use Jump to load a date.';
   }
 }
 
-async function ensureLifelogLoaded(start, end, statusEl) {
-  if (start && end) {
-    const key = `${start}..${end}`;
-    if (lifelogSource !== 'range' || lifelogRangeKey !== key) {
-      lifelogRangeKey = key;
-      lifelogSource = 'range';
-      await loadLifelogByRange(start, end, statusEl);
-    }
-    return;
-  }
+async function ensureLifelogLoaded(_, __, statusEl) {
   if (!allLifelog.length || lifelogSource !== 'listing') {
     await loadAllLifelog(statusEl);
   }
-}
-
-function setLogRangeDays(days) {
-  const todayUTC = getBeijingDateUTC();
-  const end = formatDateUTC(todayUTC);
-  const startDate = new Date(Date.UTC(todayUTC.getUTCFullYear(), todayUTC.getUTCMonth(), todayUTC.getUTCDate()));
-  if (days > 0) {
-    startDate.setUTCDate(startDate.getUTCDate() - (days - 1));
-  }
-  const start = formatDateUTC(startDate);
-  const startInput = document.getElementById('logDateStart');
-  const endInput = document.getElementById('logDateEnd');
-  if (startInput) startInput.value = start;
-  if (endInput) endInput.value = end;
-}
-
-function initLogDefaults() {
-  const todayUTC = getBeijingDateUTC();
-  const end = formatDateUTC(todayUTC);
-  const startDate = new Date(Date.UTC(todayUTC.getUTCFullYear() - 1, todayUTC.getUTCMonth(), todayUTC.getUTCDate()));
-  const start = formatDateUTC(startDate);
-  const startInput = document.getElementById('logDateStart');
-  const endInput = document.getElementById('logDateEnd');
-  if (startInput && !startInput.value) startInput.value = start;
-  if (endInput && !endInput.value) endInput.value = end;
-  return { start, end };
 }
 
 export function initLogs(statusEl) {
@@ -452,58 +389,11 @@ export function initLogs(statusEl) {
   const jumpInput = document.getElementById('logJumpDate');
 
   const debouncedLogFilter = debounce(async () => {
-    const start = document.getElementById('logDateStart')?.value || null;
-    const end = document.getElementById('logDateEnd')?.value || null;
-    await ensureLifelogLoaded(start, end, statusEl);
+    await ensureLifelogLoaded(null, null, statusEl);
     applyLogFilters();
   }, 300);
 
-  const logQuickButtons = Array.from(document.querySelectorAll('[data-range]'));
-
   nameInput.addEventListener('input', debouncedLogFilter);
-  document.getElementById('logDateStart')?.addEventListener('change', async () => {
-    clearActiveButtons(logQuickButtons);
-    const start = document.getElementById('logDateStart')?.value || null;
-    const end = document.getElementById('logDateEnd')?.value || null;
-    if (start && end) {
-      lifelogRangeKey = `${start}..${end}`;
-      lifelogSource = 'range';
-      await loadLifelogByRange(start, end, statusEl);
-    }
-    applyLogFilters();
-  });
-  document.getElementById('logDateEnd')?.addEventListener('change', async () => {
-    clearActiveButtons(logQuickButtons);
-    const start = document.getElementById('logDateStart')?.value || null;
-    const end = document.getElementById('logDateEnd')?.value || null;
-    if (start && end) {
-      lifelogRangeKey = `${start}..${end}`;
-      lifelogSource = 'range';
-      await loadLifelogByRange(start, end, statusEl);
-    }
-    applyLogFilters();
-  });
-
-  logQuickButtons.forEach(btn => {
-    btn.addEventListener('click', async () => {
-      setActiveButton(logQuickButtons, btn);
-      const val = btn.getAttribute('data-range');
-      if (val === 'today') {
-        setLogRangeDays(1);
-      } else {
-        const days = Number(val);
-        if (!Number.isNaN(days)) setLogRangeDays(days);
-      }
-      const start = document.getElementById('logDateStart')?.value || null;
-      const end = document.getElementById('logDateEnd')?.value || null;
-      if (start && end) {
-        lifelogRangeKey = `${start}..${end}`;
-        lifelogSource = 'range';
-        await loadLifelogByRange(start, end, statusEl);
-      }
-      applyLogFilters();
-    });
-  });
 
   if (loadMoreBtn) {
     loadMoreBtn.addEventListener('click', () => renderTimelineChunk(false));
@@ -511,18 +401,19 @@ export function initLogs(statusEl) {
 
   async function jumpToDate(dateStr) {
     if (!dateStr) return;
-    const startInput = document.getElementById('logDateStart');
-    const endInput = document.getElementById('logDateEnd');
-    const start = startInput?.value || null;
-    const end = endInput?.value || null;
-    if (!start || !end || dateStr < start || dateStr > end) {
-      if (startInput) startInput.value = dateStr;
-      if (endInput) endInput.value = dateStr;
-      lifelogRangeKey = `${dateStr}..${dateStr}`;
-      lifelogSource = 'range';
-      await loadLifelogByRange(dateStr, dateStr, statusEl);
-      applyLogFilters();
+    await ensureLifelogLoaded(null, null, statusEl);
+    applyLogFilters();
+    if (ensureDateRendered(dateStr)) {
+      requestAnimationFrame(() => {
+        const target = document.getElementById(`log-date-${dateStr}`);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return;
     }
+    lifelogRangeKey = `${dateStr}..${dateStr}`;
+    lifelogSource = 'range';
+    await loadLifelogByRange(dateStr, dateStr, statusEl);
+    applyLogFilters();
     if (ensureDateRendered(dateStr)) {
       requestAnimationFrame(() => {
         const target = document.getElementById(`log-date-${dateStr}`);
@@ -556,8 +447,5 @@ export function initLogs(statusEl) {
     setLifelogView('timeline');
   }
 
-  const { start: defaultStart, end: defaultEnd } = initLogDefaults();
-  lifelogRangeKey = `${defaultStart}..${defaultEnd}`;
-  lifelogSource = 'range';
-  loadLifelogByRange(defaultStart, defaultEnd, statusEl);
+  loadAllLifelog(statusEl);
 }

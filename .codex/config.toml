@@ -20,9 +20,7 @@ powershell_utf8 = true
 
 [sandbox_workspace_write]
 writable_roots = [
-  "D:\\Projects\\LifeKernel\\workspace",
-  "D:\\Projects\\LifeKernel\\.codex\\skills",
-  "D:\\Projects\\LifeKernel\\AGENTS.md",
+  "D:\\Projects\\LifeKernel"
 ]
 network_access = true
 

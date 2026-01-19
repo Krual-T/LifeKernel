@@ -128,9 +128,13 @@ function renderList(items) {
     }
     const entities = item.entities?.length ? item.entities.map(e => `<span class="tag">${e}</span>`).join('') : '';
     const sources = formatSources(item.sources);
+    const primaryUrl = item.sources?.find(s => s?.url)?.url || '';
+    const titleHtml = primaryUrl
+      ? `<a href="${escapeHtml(primaryUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title || '')}</a>`
+      : escapeHtml(item.title || '');
     html.push(`
       <div class="card">
-        <div class="news-title">${item.title || ''}</div>
+        <div class="news-title">${titleHtml}</div>
         <div class="news-meta">
           ${item.date ? `<span class="pill">${item.date}</span>` : ''}
           ${item.category ? `<span class="pill">${item.category}</span>` : ''}

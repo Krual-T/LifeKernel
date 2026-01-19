@@ -138,10 +138,9 @@ function renderList(items) {
         <div class="news-meta">
           ${item.date ? `<span class="pill">${item.date}</span>` : ''}
           ${item.category ? `<span class="pill">${item.category}</span>` : ''}
-          ${item.recordTitle ? `<span class="pill">${item.recordTitle}</span>` : ''}
         </div>
-        ${item.summary ? `<div class="section">${item.summary}</div>` : ''}
-        ${entities ? `<div class="section">${entities}</div>` : ''}
+        ${item.summary ? `<div class="section news-summary">${item.summary}</div>` : ''}
+        ${entities ? `<div class="section news-entities">${entities}</div>` : ''}
         
       </div>
     `);

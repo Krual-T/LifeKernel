@@ -1,5 +1,5 @@
 ---
-name: record-jsonl-unified
+name: recorder
 description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录技巧，支持 auto record 到 lifelog。
 ---
 
@@ -53,20 +53,20 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 Windows（PowerShell）：
 ```powershell
-python .\.codex\skills\record-jsonl-unified\scripts\record_jsonl.py --record-type knowledge --title "Live Preview 目录列表返回反斜杠" --solution "对 href 做 decodeURIComponent 并将 \\ 替换为 /" --tags "lifelog,live-preview" --module work --source conversation
+python .\.codex\skills\recorder\scripts\record_jsonl.py --record-type knowledge --title "Live Preview 目录列表返回反斜杠" --solution "对 href 做 decodeURIComponent 并将 \\ 替换为 /" --tags "lifelog,live-preview" --module work --source conversation
 ```
 
 ```powershell
-python .\.codex\skills\record-jsonl-unified\scripts\record_jsonl.py --record-type lifelog --description "整理归档索引" --module work --source conversation --status completed --related-file docs/skills_archive/ARCHIVE_LOG.md
+python .\.codex\skills\recorder\scripts\record_jsonl.py --record-type lifelog --description "整理归档索引" --module work --source conversation --status completed --related-file docs/skills_archive/ARCHIVE_LOG.md
 ```
 
 Linux（bash）：
 ```bash
-python ./.codex/skills/record-jsonl-unified/scripts/record_jsonl.py --record-type knowledge --title "Live Preview 目录列表返回反斜杠" --solution "对 href 做 decodeURIComponent 并将 \\\\ 替换为 /" --tags "lifelog,live-preview" --module work --source conversation
+python ./.codex/skills/recorder/scripts/record_jsonl.py --record-type knowledge --title "Live Preview 目录列表返回反斜杠" --solution "对 href 做 decodeURIComponent 并将 \\ 替换为 /" --tags "lifelog,live-preview" --module work --source conversation
 ```
 
 ```bash
-python ./.codex/skills/record-jsonl-unified/scripts/record_jsonl.py --record-type lifelog --description "整理归档索引" --module work --source conversation --status completed --related-file docs/skills_archive/ARCHIVE_LOG.md
+python ./.codex/skills/recorder/scripts/record_jsonl.py --record-type lifelog --description "整理归档索引" --module work --source conversation --status completed --related-file docs/skills_archive/ARCHIVE_LOG.md
 ```
 
 ## 字段规范（通用）

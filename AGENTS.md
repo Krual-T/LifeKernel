@@ -20,7 +20,7 @@
 ---
 
 ## 2. 核心目标
-1. 统一记录入口：**全部记录类数据使用 `record-jsonl-unified` skill**（knowledge / lifelog / memory / tasks）。
+1. 统一记录入口：**全部记录类数据使用 `recorder` skill**（knowledge / lifelog / memory / tasks）。
 2. 自动捕获可复用流程，沉淀为 skills；并定期审计与改进。
 3. **Git 全自动**：在规则允许时自动 `git add/commit/push`。
 4. 维护任务、知识、决策、行动日志的上下文，确保可追溯。
@@ -32,7 +32,7 @@
 ## 3. 可拓展范式（统一闭环）
 **捕获 → 记录 → 组织 → 回溯 → 复用**
 - 捕获：从对话、OCR、文件、外部输入识别“任务/知识/决策/想法/行动”。
-- 记录：统一调用 `record-jsonl-unified` 写入 JSONL。
+- 记录：统一调用 `recorder` 写入 JSONL。
 - 组织：按模块与标签组织；必要时生成视图文件。
 - 回溯：通过 task_list / knowledge 查询 / lifelog 追踪。
 - 复用：沉淀为 skills 或流程模板。
@@ -68,7 +68,7 @@
   - “恢复自动提交” → 继续自动提交
 
 ### 4.4 任务与记录规范（统一入口）
-**统一入口**：所有记录类数据必须通过 `record-jsonl-unified` 写入；不要手写 JSONL。
+**统一入口**：所有记录类数据必须通过 `recorder` 写入；不要手写 JSONL。
 
 #### 4.4.1 任务管理
 - **进行中任务**：`workspace/records/tasks/task_list.md`
@@ -85,6 +85,7 @@
 - 路径：`workspace/records/memory/`
 - 用于记录偏好、决策与上下文（仅内部使用）。
 - 记录内容统一中文。
+- **允许随时修改/清理 memory，包括删除不再需要的信息。**
 
 ### 4.5 知识与想法
 - 知识与想法统一写入 `workspace/records/knowledge/knowledge.jsonl`。
@@ -111,3 +112,4 @@
 1. 检查 `.codex/skills` 与 `workspace` 是否存在。
 2. 提示已存在的 skills 与记录文件（简要概览）。
 3. 用 3–5 句话总结：目标理解 + 本次优先事项。
+

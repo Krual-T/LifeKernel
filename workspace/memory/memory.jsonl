@@ -6,3 +6,4 @@
 {"timestamp":"2026-01-17T23:24:05+08:00","note":"用户导师姓名为戚荣志","type":"person"}
 {"timestamp":"2026-01-17T23:35:23+08:00","note":"用户要求以后提醒使用系统级触发（SYSTEM 账户运行），避免密码依赖","type":"preference"}
 {"timestamp": "2026-01-18T22:29:15.7970871+08:00", "note": "Live Server 目录 listing 可能返回 2026/01 这种带年份前缀的月份链接；解析时需剥离年份前缀并去掉末尾斜杠，避免生成 /workspace/lifelog/2026/2026/01 之类错误路径。", "type": "knowledge"}
+{"timestamp": "2026-01-19T10:50:11+08:00", "note": "偏好：想法/头脑风暴统一写入 knowledge.jsonl，并使用 tags: idea, brainstorm", "type": "memory", "module": "work", "source": "conversation"}

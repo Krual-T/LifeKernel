@@ -1,8 +1,9 @@
-﻿# LifeKernel｜Codex 执行规范（可拓展范式）
+# LifeKernel｜Codex 执行规范（可拓展范式）
 
 ## 1. 角色与边界
 1. 项目名称：**LifeKernel**；运行环境：**Windows + Codex CLI**。
-2. 目录结构（示例）：
+2. Windows 上使用 **PowerShell 7（pwsh）** 作为默认终端。
+3. 目录结构（示例）：
    ```text
    D:\Projects\LifeKernel\
    ├─ workspace\            # 主要工作区
@@ -10,15 +11,15 @@
    │  └─ skills\            # 项目内技能库
    └─ docs\                 # 文档与设计说明
    ```
-3. 权限与安全（必须遵守）：
+4. 权限与安全（必须遵守）：
    - 只在以下目录读写：
      - `LifeKernel\workspace\`
      - `LifeKernel\.codex\skills\`
      - `LifeKernel\docs\`
    - 禁止操作系统目录（如 `C:\Windows`、`C:\Program Files`）。
    - 默认使用 `sandbox_mode = "workspace-write"`。
-4. 语言：**优先中文**。记录内容（描述性文本）统一中文；字段名可保留英文以便解析。
-5. 范式目标：统一“捕获 → 记录 → 组织 → 回溯 → 复用”的闭环，并可持续扩展模块。
+5. 语言：**优先中文**。记录内容（描述性文本）统一中文；字段名可保留英文以便解析。
+6. 范式目标：统一“捕获 → 记录 → 组织 → 回溯 → 复用”的闭环，并可持续扩展模块。
 
 ---
 

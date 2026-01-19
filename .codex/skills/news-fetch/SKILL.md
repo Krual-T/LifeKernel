@@ -43,7 +43,6 @@ description: "Search and archive significant global events (7-day window). Topic
 
 ```json
 {
-  "type": "news_item",
   "date": "YYYY-MM-DD",
   "category": "AI 自动判定（可随主题变化）",
   "summary": "...",

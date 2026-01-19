@@ -18,6 +18,12 @@ let lifelogRangeKey = null;
 let lifelogSource = null;
 let lifelogBase = null;
 let lifelogFileIndex = null;
+let filteredLifelog = [];
+const timelineState = {
+  pageSize: 200,
+  rendered: 0,
+  lastDate: null
+};
 
 function groupByDate(entries) {
   const grouped = [];
@@ -33,50 +39,92 @@ function groupByDate(entries) {
   return grouped;
 }
 
-function renderLifelog(entries) {
+function updateTimelineControls() {
+  const countEl = document.getElementById('logTimelineCount');
+  const loadMoreBtn = document.getElementById('logLoadMore');
+  const total = filteredLifelog.length;
+  const shown = Math.min(timelineState.rendered, total);
+  if (countEl) countEl.textContent = `Showing ${shown} / ${total}`;
+  if (loadMoreBtn) loadMoreBtn.style.display = shown < total ? 'inline-flex' : 'none';
+}
+
+function ensureTimelineElement(listEl) {
+  let timeline = listEl.querySelector('.timeline');
+  if (!timeline) {
+    timeline = document.createElement('div');
+    timeline.className = 'timeline';
+    listEl.appendChild(timeline);
+  }
+  return timeline;
+}
+
+function renderTimelineChunk(reset = false) {
   const list = document.getElementById('lifelogList');
   if (!list) return;
-  list.innerHTML = '';
-  if (entries.length === 0) {
-    list.innerHTML = '<div class="card muted">No log entries found.</div>';
-  } else {
-    const timeline = document.createElement('div');
-    timeline.className = 'timeline';
-    const grouped = groupByDate(entries.filter(e => !e._parseError));
-    for (const e of grouped) {
-      if (e._dateHeader) {
-        const header = document.createElement('div');
-        header.className = 'timeline-date';
-        header.textContent = e._dateHeader;
-        timeline.appendChild(header);
-        continue;
-      }
-      const item = document.createElement('div');
-      item.className = 'timeline-item';
-      const status = String(e.status || 'completed').toLowerCase();
-      const statusClass = status === 'failed' ? 'status-failed' : (status === 'pending' ? 'status-pending' : 'status-completed');
-      const time = formatTimeShort(e.timestamp || '');
-      const files = (e.related_files || []).join(', ');
-      const module = String(e.module || 'work').toLowerCase();
-      const moduleClass = `module-${module}`;
-      item.innerHTML = `
-        <div class="timeline-time mono">${time || ''}</div>
-        <div class="timeline-dot ${moduleClass}"></div>
-        <div class="timeline-card">
-          <div>${e.description || ''}</div>
-          <div class="timeline-meta">
-            <span class="meta-dot ${statusClass}"></span>
-            <span>${e.module || 'work'}</span>
-            <span>${e.status || ''}</span>
-          </div>
-          ${files ? `<div class="log-paths">${files}</div>` : ''}
-        </div>
-      `;
-      timeline.appendChild(item);
-    }
-    list.appendChild(timeline);
+  if (reset) {
+    list.innerHTML = '';
+    timelineState.rendered = 0;
+    timelineState.lastDate = null;
   }
-  renderLifelogTable(entries.filter(e => !e._parseError));
+  if (filteredLifelog.length === 0) {
+    list.innerHTML = '<div class="card muted">No log entries found.</div>';
+    updateTimelineControls();
+    return;
+  }
+  const timeline = ensureTimelineElement(list);
+  const start = timelineState.rendered;
+  const end = Math.min(start + timelineState.pageSize, filteredLifelog.length);
+  const slice = filteredLifelog.slice(start, end).filter(e => !e._parseError);
+  for (const e of slice) {
+    const date = formatDateShort(e.timestamp || '');
+    if (date && date !== timelineState.lastDate) {
+      const header = document.createElement('div');
+      header.className = 'timeline-date';
+      header.textContent = date;
+      header.id = `log-date-${date}`;
+      header.dataset.date = date;
+      timeline.appendChild(header);
+      timelineState.lastDate = date;
+    }
+    const item = document.createElement('div');
+    item.className = 'timeline-item';
+    const status = String(e.status || 'completed').toLowerCase();
+    const statusClass = status === 'failed' ? 'status-failed' : (status === 'pending' ? 'status-pending' : 'status-completed');
+    const time = formatTimeShort(e.timestamp || '');
+    const files = (e.related_files || []).join(', ');
+    const module = String(e.module || 'work').toLowerCase();
+    const moduleClass = `module-${module}`;
+    item.innerHTML = `
+      <div class="timeline-time mono">${time || ''}</div>
+      <div class="timeline-dot ${moduleClass}"></div>
+      <div class="timeline-card">
+        <div>${e.description || ''}</div>
+        <div class="timeline-meta">
+          <span class="meta-dot ${statusClass}"></span>
+          <span>${e.module || 'work'}</span>
+          <span>${e.status || ''}</span>
+        </div>
+        ${files ? `<div class="log-paths">${files}</div>` : ''}
+      </div>
+    `;
+    timeline.appendChild(item);
+  }
+  timelineState.rendered = end;
+  updateTimelineControls();
+}
+
+function renderTimeline(reset = false) {
+  renderTimelineChunk(reset);
+}
+
+function ensureDateRendered(dateStr) {
+  if (!dateStr) return false;
+  const index = filteredLifelog.findIndex(e => formatDateShort(e.timestamp || '') === dateStr);
+  if (index === -1) return false;
+  while (timelineState.rendered <= index && timelineState.rendered < filteredLifelog.length) {
+    renderTimelineChunk(false);
+  }
+  return true;
 }
 
 function renderLifelogTable(entries) {
@@ -126,7 +174,9 @@ function applyLogFilters() {
     return tb - ta;
   });
 
-  renderLifelog(logs);
+  filteredLifelog = logs;
+  renderTimeline(true);
+  renderLifelogTable(logs.filter(e => !e._parseError));
 }
 
 function setLogLoading(isLoading, message) {
@@ -384,6 +434,9 @@ function initLogDefaults() {
 export function initLogs(statusEl) {
   const nameInput = document.getElementById('logNameFilter');
   if (!nameInput) return;
+  const loadMoreBtn = document.getElementById('logLoadMore');
+  const jumpBtn = document.getElementById('logJumpBtn');
+  const jumpInput = document.getElementById('logJumpDate');
 
   const debouncedLogFilter = debounce(async () => {
     const start = document.getElementById('logDateStart')?.value || null;
@@ -438,6 +491,38 @@ export function initLogs(statusEl) {
       applyLogFilters();
     });
   });
+
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => renderTimelineChunk(false));
+  }
+
+  async function jumpToDate(dateStr) {
+    if (!dateStr) return;
+    const startInput = document.getElementById('logDateStart');
+    const endInput = document.getElementById('logDateEnd');
+    const start = startInput?.value || null;
+    const end = endInput?.value || null;
+    if (!start || !end || dateStr < start || dateStr > end) {
+      if (startInput) startInput.value = dateStr;
+      if (endInput) endInput.value = dateStr;
+      lifelogRangeKey = `${dateStr}..${dateStr}`;
+      lifelogSource = 'range';
+      await loadLifelogByRange(dateStr, dateStr, statusEl);
+      applyLogFilters();
+    }
+    if (ensureDateRendered(dateStr)) {
+      requestAnimationFrame(() => {
+        const target = document.getElementById(`log-date-${dateStr}`);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }
+
+  if (jumpBtn && jumpInput) {
+    jumpBtn.addEventListener('click', async () => {
+      await jumpToDate(jumpInput.value || null);
+    });
+  }
 
   const viewButtons = Array.from(document.querySelectorAll('.view-button'));
   if (viewButtons.length) {

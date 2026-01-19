@@ -272,11 +272,16 @@ def main() -> None:
         append_jsonl(os.path.join("workspace", "records", "memory", "memory.jsonl"), record)
 
     else:  # tasks
+        task_status = args.status or "pending"
+        if task_status == "completed":
+            task_status = "done"
+        if task_status == "pending" and args.completed_at:
+            task_status = "done"
         record = {
             "id": args.record_id,
             "title": args.title,
             "details": args.details,
-            "status": args.status or "pending",
+            "status": task_status,
             "priority": args.priority or "medium",
             "module": args.module or "work",
             "created_at": timestamp,

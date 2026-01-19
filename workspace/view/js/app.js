@@ -2,13 +2,14 @@ import { loadTabPartials, initTabs } from './tabs.js';
 import { initTasks, loadTasks } from './tasks.js';
 import { initLogs } from './logs.js';
 import { initKnowledge } from './knowledge.js';
+import { initNews } from './news.js';
 
 function showCorsNotice() {
   const notice = document.getElementById('corsNotice');
   if (!notice) return;
   if (location.protocol === 'file:') {
     notice.style.display = 'block';
-    notice.innerHTML = '¼ì²âµ½ file:// ·ÃÎÊ£¬ÇëÊ¹ÓÃ Live Server ´ò¿ªÒ³Ãæ¡£';
+    notice.innerHTML = 'æ£€æµ‹åˆ° file:// è®¿é—®ï¼Œè¯·ä½¿ç”¨ Live Server é¢„è§ˆã€‚';
   }
 }
 
@@ -22,6 +23,7 @@ async function initApp() {
 
   initLogs(statusEl);
   initKnowledge();
+  initNews();
 
   showCorsNotice();
 }

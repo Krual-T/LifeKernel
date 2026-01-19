@@ -582,6 +582,12 @@
       margin-bottom: 6px;
     }
 
+    .news-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
     .knowledge-meta {
       display: flex;
       gap: 10px;
@@ -597,6 +603,13 @@
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 12px;
+    }
+
+    .source-list {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      word-break: break-word;
     }
 
     .kv {
@@ -675,11 +688,13 @@
 
     <div class="tabs" role="tablist" aria-label="Dashboard Tabs">
       <button class="tab-button active" data-tab="tasks" role="tab" aria-selected="true">Tasks</button>
+      <button class="tab-button" data-tab="news" role="tab" aria-selected="false">News</button>
       <button class="tab-button" data-tab="knowledge" role="tab" aria-selected="false">Knowledge</button>
       <button class="tab-button" data-tab="logs" role="tab" aria-selected="false">Logs</button>
     </div>
 
     <div id="tab-tasks" class="tab-panel active" role="tabpanel" data-src="tabs/tasks.html"></div>
+    <div id="tab-news" class="tab-panel" role="tabpanel" data-src="tabs/news.html"></div>
     <div id="tab-logs" class="tab-panel" role="tabpanel" data-src="tabs/logs.html"></div>
     <div id="tab-knowledge" class="tab-panel" role="tabpanel" data-src="tabs/knowledge.html"></div>
   </div>

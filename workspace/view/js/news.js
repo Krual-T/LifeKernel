@@ -183,5 +183,12 @@ function initFilters() {
   endInput?.addEventListener('change', applyFilters);
 }
 
-initFilters();
-loadNews();
+export function initNews() {
+  if (!document.getElementById('newsList')) return;
+  initFilters();
+  loadNews();
+}
+
+if (document.getElementById('newsList')) {
+  initNews();
+}

@@ -1,0 +1,29 @@
+<h2>News Digest</h2>
+<div id="newsMeta" class="muted"></div>
+
+<div class="section card filter-panel">
+  <div class="filter-row">
+    <div class="filter-field filter-date">
+      <label>Start Date</label>
+      <input id="newsDateStart" type="date" />
+    </div>
+    <div class="filter-field filter-date">
+      <label>End Date</label>
+      <input id="newsDateEnd" type="date" />
+    </div>
+    <div class="filter-field filter-select">
+      <label>Category</label>
+      <select id="newsCategory">
+        <option value="">All</option>
+      </select>
+    </div>
+    <div class="filter-field filter-text">
+      <label>Keyword / Entity</label>
+      <input id="newsKeyword" type="text" placeholder="title, summary, entity..." />
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div id="newsList" class="list"></div>
+</div>

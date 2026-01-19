@@ -1,6 +1,6 @@
 ---
 name: recorder
-description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录技巧，支持 auto record 到 lifelog。
+description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录技巧，支持新增/更新/删除（CRUD）、UUID 自动 id 与 auto record 到 lifelog。
 ---
 
 # 统一 JSONL 记录（knowledge / lifelog / memory / tasks）
@@ -17,8 +17,8 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 ## 输入
 
 - record_type：`knowledge` | `lifelog` | `memory` | `tasks` | `update` | `delete`
-- update：按 `id + key + value` 就地更新记录（覆盖写入）
-- delete：按 `id` 删除记录
+- update：按 `id + key + value` 查询记录后就地更新（覆盖写入）
+- delete：按 `id` 查询记录后删除
 - data：记录内容（按各自 schema）
 - related_files：相关文件路径（可选）
 - auto_record：是否自动写入 lifelog（默认：对 knowledge 为 `true`）
@@ -37,6 +37,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
    - tasks：`workspace/records/tasks/tasks.jsonl`
 2. **生成记录对象**
    - 统一字段建议：`id`、`timestamp`、`source`、`module`、`related_files`
+   - `id`：默认自动生成 UUID（`uuid4`），如需手动指定需显式传入
    - 业务字段按 record_type schema 补充
 3. **UTF-8 无 BOM 追加写入**
    - 记录必须 append-only
@@ -47,7 +48,7 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 ## 更新记录（CRUD）
 
-用于在 JSONL 中“就地更新/删除”记录：读取文件并覆盖写回（保留原有非 JSON 行）。
+用于在 JSONL 中“就地更新/删除”记录：先查询目标记录与所在文件，再读取文件并覆盖写回（保留原有非 JSON 行）。
 
 参数：
 - record_type：`update`
@@ -58,16 +59,16 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 示例（PowerShell，更新）：
 ```powershell
-python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type tasks --id "2026-01-19-1010-datgs-domain" --key status --value "completed"
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type tasks --id "b3e9c6b0-9f5f-47ff-8d62-1f5f8b7f2a1c" --key status --value "completed"
 ```
 
 ```powershell
-python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type knowledge --id "2026-01-19-1010-coworker-research" --key tags --value-json "[\"coworker\",\"research\"]"
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type knowledge --id "7f5d6f8a-1c3a-4f7e-9e42-2c3e1d6b0e9a" --key tags --value-json "[\"coworker\",\"research\"]"
 ```
 
 示例（PowerShell，删除）：
 ```powershell
-python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type delete --target-type tasks --id "2026-01-19-1010-datgs-domain"
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type delete --target-type tasks --id "b3e9c6b0-9f5f-47ff-8d62-1f5f8b7f2a1c"
 ```
 
 ## 脚本（推荐）
@@ -98,7 +99,7 @@ python ./.codex/skills/recorder/scripts/record_jsonl.py --record-type lifelog --
 
 ## 字段规范（通用）
 
-- `id`：`YYYY-MM-DD-HHMM-<slug>`
+- `id`：UUID（`uuid4`）
 - `timestamp`：ISO8601
 - `source`：`conversation` | `from_screenshot`
 - `module`：`work` | `personal` | `learning` | `health`

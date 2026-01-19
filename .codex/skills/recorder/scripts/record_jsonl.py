@@ -1,7 +1,7 @@
 import argparse
 import json
 import os
-import re
+import uuid
 from datetime import datetime
 
 
@@ -15,22 +15,8 @@ def iso_now() -> str:
     return datetime.now().astimezone().isoformat(timespec="seconds")
 
 
-def slugify(text: str) -> str:
-    if not text:
-        return "record"
-    value = text.lower()
-    value = re.sub(r"[^a-z0-9]+", "-", value)
-    value = value.strip("-")
-    return value[:32] or "record"
-
-
-def build_id(timestamp: str, seed: str) -> str:
-    try:
-        dt = datetime.fromisoformat(timestamp)
-    except ValueError:
-        dt = datetime.now().astimezone()
-    slug = slugify(seed)
-    return f"{dt:%Y-%m-%d-%H%M}-{slug}"
+def generate_id() -> str:
+    return str(uuid.uuid4())
 
 
 def append_jsonl(path: str, data: dict) -> None:
@@ -61,23 +47,6 @@ def get_lifelog_path(timestamp: str) -> str:
     )
 
 
-def get_lifelog_path_from_id(record_id: str) -> str:
-    if not record_id or len(record_id) < 10:
-        raise SystemExit("lifelog update requires id with date prefix (YYYY-MM-DD-...)")
-    try:
-        dt = datetime.strptime(record_id[:10], "%Y-%m-%d")
-    except ValueError as exc:
-        raise SystemExit("lifelog update requires id with date prefix (YYYY-MM-DD-...)") from exc
-    return os.path.join(
-        "workspace",
-        "records",
-        "lifelog",
-        f"{dt:%Y}",
-        f"{dt:%m}",
-        f"{dt:%d}.jsonl",
-    )
-
-
 def get_record_path(record_type: str, record_id: str = "") -> str:
     if record_type == "knowledge":
         return os.path.join("workspace", "records", "knowledge", "knowledge.jsonl")
@@ -85,8 +54,6 @@ def get_record_path(record_type: str, record_id: str = "") -> str:
         return os.path.join("workspace", "records", "memory", "memory.jsonl")
     if record_type == "tasks":
         return os.path.join("workspace", "records", "tasks", "tasks.jsonl")
-    if record_type == "lifelog":
-        return get_lifelog_path_from_id(record_id)
     raise SystemExit(f"unsupported record type: {record_type}")
 
 
@@ -108,6 +75,39 @@ def load_latest_record(path: str, record_id: str) -> dict:
     if latest is None:
         raise SystemExit(f"record id not found: {record_id}")
     return latest
+
+
+def find_record_by_id(target_type: str, record_id: str) -> tuple[str, dict]:
+    if target_type != "lifelog":
+        path = get_record_path(target_type)
+        record = load_latest_record(path, record_id)
+        return path, record
+
+    lifelog_root = os.path.join("workspace", "records", "lifelog")
+    if not os.path.exists(lifelog_root):
+        raise SystemExit(f"record file not found: {lifelog_root}")
+
+    for root, _, files in os.walk(lifelog_root):
+        for name in files:
+            if not name.endswith(".jsonl"):
+                continue
+            path = os.path.join(root, name)
+            latest = None
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        data = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if data.get("id") == record_id:
+                        latest = data
+            if latest is not None:
+                return path, latest
+
+    raise SystemExit(f"record id not found: {record_id}")
 
 
 def load_records_with_raw(path: str) -> list:
@@ -143,7 +143,7 @@ def write_records(path: str, records: list) -> None:
 def build_lifelog_entry(description: str, timestamp: str, module: str, skill_name: str,
                          source: str, status: str, related_files: list) -> dict:
     entry = {
-        "id": build_id(timestamp, description),
+        "id": generate_id(),
         "timestamp": timestamp,
         "module": module or "work",
         "skill_name": skill_name or "recorder",
@@ -206,7 +206,7 @@ def main() -> None:
         if args.update_value is None and args.update_value_json is None:
             raise SystemExit("--value or --value-json is required for update")
 
-        path = get_record_path(args.target_type, args.record_id)
+        path, _ = find_record_by_id(args.target_type, args.record_id)
         if args.update_value_json:
             try:
                 value = json.loads(args.update_value_json)
@@ -235,7 +235,7 @@ def main() -> None:
             raise SystemExit("--target-type is required for delete")
         if not args.record_id:
             raise SystemExit("--id is required for delete")
-        path = get_record_path(args.target_type, args.record_id)
+        path, _ = find_record_by_id(args.target_type, args.record_id)
         records = load_records_with_raw(path)
         before = len(records)
         records = [item for item in records if not (item.get("data") and item["data"].get("id") == args.record_id)]
@@ -263,7 +263,7 @@ def main() -> None:
             record["source"] = args.source
         if related_files:
             record["related_files"] = related_files
-        record_id = args.record_id or build_id(timestamp, args.title or args.summary or args.problem or "knowledge")
+        record_id = args.record_id or generate_id()
         record["id"] = record_id
         if args.extra:
             record.update(json.loads(args.extra))
@@ -308,6 +308,7 @@ def main() -> None:
 
     elif args.record_type == "memory":
         record = {
+            "id": args.record_id or generate_id(),
             "timestamp": timestamp,
             "note": args.note or args.summary or args.title,
             "type": "memory",
@@ -342,7 +343,7 @@ def main() -> None:
         }
         record = {k: v for k, v in record.items() if v not in (None, "")}
         if not record.get("id"):
-            record["id"] = build_id(timestamp, args.title or "task")
+            record["id"] = generate_id()
         if related_files:
             record["related_files"] = related_files
         if args.extra:

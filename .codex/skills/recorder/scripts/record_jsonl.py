@@ -110,6 +110,36 @@ def load_latest_record(path: str, record_id: str) -> dict:
     return latest
 
 
+def load_records_with_raw(path: str) -> list:
+    if not os.path.exists(path):
+        raise SystemExit(f"record file not found: {path}")
+    records = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            raw = line.rstrip("\n")
+            if not raw:
+                continue
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError:
+                records.append({"raw": raw, "data": None})
+                continue
+            records.append({"raw": raw, "data": data})
+    return records
+
+
+def write_records(path: str, records: list) -> None:
+    ensure_dir(path)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        for item in records:
+            data = item.get("data")
+            raw = item.get("raw")
+            if data is not None:
+                f.write(json.dumps(data, ensure_ascii=False) + "\n")
+            elif raw:
+                f.write(raw + "\n")
+
+
 def build_lifelog_entry(description: str, timestamp: str, module: str, skill_name: str,
                          source: str, status: str, related_files: list) -> dict:
     entry = {
@@ -128,7 +158,7 @@ def build_lifelog_entry(description: str, timestamp: str, module: str, skill_nam
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Unified JSONL recorder")
-    parser.add_argument("--record-type", required=True, choices=["knowledge", "lifelog", "memory", "tasks", "update"])
+    parser.add_argument("--record-type", required=True, choices=["knowledge", "lifelog", "memory", "tasks", "update", "delete"])
     parser.add_argument("--timestamp", default=None)
     parser.add_argument("--id", dest="record_id", default=None)
     parser.add_argument("--module", default=None)
@@ -177,7 +207,6 @@ def main() -> None:
             raise SystemExit("--value or --value-json is required for update")
 
         path = get_record_path(args.target_type, args.record_id)
-        origin_data = load_latest_record(path, args.record_id)
         if args.update_value_json:
             try:
                 value = json.loads(args.update_value_json)
@@ -186,11 +215,33 @@ def main() -> None:
         else:
             value = args.update_value
 
-        updated = dict(origin_data)
-        updated[args.update_key] = value
-        if "timestamp" not in updated:
-            updated["timestamp"] = timestamp
-        append_jsonl(path, updated)
+        records = load_records_with_raw(path)
+        updated_any = False
+        for item in records:
+            data = item.get("data")
+            if not data:
+                continue
+            if data.get("id") == args.record_id:
+                data[args.update_key] = value
+                if "timestamp" not in data:
+                    data["timestamp"] = timestamp
+                updated_any = True
+        if not updated_any:
+            raise SystemExit(f"record id not found: {args.record_id}")
+        write_records(path, records)
+
+    elif args.record_type == "delete":
+        if not args.target_type:
+            raise SystemExit("--target-type is required for delete")
+        if not args.record_id:
+            raise SystemExit("--id is required for delete")
+        path = get_record_path(args.target_type, args.record_id)
+        records = load_records_with_raw(path)
+        before = len(records)
+        records = [item for item in records if not (item.get("data") and item["data"].get("id") == args.record_id)]
+        if len(records) == before:
+            raise SystemExit(f"record id not found: {args.record_id}")
+        write_records(path, records)
 
     elif args.record_type == "knowledge":
         record = {

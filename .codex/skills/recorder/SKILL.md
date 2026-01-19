@@ -16,8 +16,9 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 
 ## 输入
 
-- record_type：`knowledge` | `lifelog` | `memory` | `tasks`
-- update：支持按 `id + key + value` 追加更新记录（append-only）
+- record_type：`knowledge` | `lifelog` | `memory` | `tasks` | `update` | `delete`
+- update：按 `id + key + value` 就地更新记录（覆盖写入）
+- delete：按 `id` 删除记录
 - data：记录内容（按各自 schema）
 - related_files：相关文件路径（可选）
 - auto_record：是否自动写入 lifelog（默认：对 knowledge 为 `true`）
@@ -44,9 +45,9 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 5. **必要时更新可视化**
    - knowledge/lifelog/tasks：`workspace/view/index.html`
 
-## 更新记录（append-only）
+## 更新记录（CRUD）
 
-用于在 JSONL 中“追加更新”某条记录：读取同 id 的最新记录，生成 `{**origin_data, key: value}` 并追加写入。
+用于在 JSONL 中“就地更新/删除”记录：读取文件并覆盖写回（保留原有非 JSON 行）。
 
 参数：
 - record_type：`update`
@@ -55,13 +56,18 @@ description: 统一记录 knowledge/lifelog/memory/tasks 的通用 JSONL 记录�
 - key：需要更新的字段名
 - value / value_json：更新值（字符串或 JSON）
 
-示例（PowerShell）：
+示例（PowerShell，更新）：
 ```powershell
 python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type tasks --id "2026-01-19-1010-datgs-domain" --key status --value "completed"
 ```
 
 ```powershell
 python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type update --target-type knowledge --id "2026-01-19-1010-coworker-research" --key tags --value-json "[\"coworker\",\"research\"]"
+```
+
+示例（PowerShell，删除）：
+```powershell
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type delete --target-type tasks --id "2026-01-19-1010-datgs-domain"
 ```
 
 ## 脚本（推荐）

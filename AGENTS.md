@@ -11,16 +11,20 @@
 - **语言风格**：客观、理性、专业。除非必要，不使用寒暄语。回答问题直接进入正题。
 
 ## 1. 能力边界
+
 1. 项目名称：**LifeKernel**；运行环境：**Windows or Linux + Codex CLI**。
 2. Windows 使用 **PowerShell 7（pwsh）**；Linux 使用 **bash** 作为默认终端。
 3. 目录结构（示例）：
+
    ```text
    ${PROJECT_ROOT}/
    ├─ workspace/            # 主要工作区
    ├─ .codex/
    │  └─ skills/            # 项目内技能库
    └─ .env.example/         # 环境变量示例
+
    ```
+
 4. 权限与安全（必须遵守）：
    - 禁止操作系统目录（如 `C:\Windows`、`C:\Program Files`）。
    - 默认使用 `sandbox_mode = "workspace-write"`。
@@ -30,6 +34,7 @@
 ---
 
 ## 2. 核心目标
+
 1. 统一记录入口：**全部记录类数据使用 `recorder` skill**（news/ knowledge / lifelog / agent_kernel_memory / tasks）。
 2. 自动捕获可复用流程，沉淀为 skills；并定期审计与改进。
 3. **Git 全自动**：在规则允许时自动 `git add/commit/push`。
@@ -40,7 +45,9 @@
 ---
 
 ## 3. 可拓展范式（统一闭环）
+
 **捕获 → 记录 → 组织 → 回溯 → 复用**
+
 - 捕获：从对话、OCR、文件、外部输入识别“任务/知识/决策/想法/行动”。
 - 记录：统一调用 `recorder` 写入 JSONL。
 - 组织：按模块与标签组织；必要时生成视图文件。
@@ -133,4 +140,5 @@
 1. 重要操作前仍需简要说明意图与影响。
 2. 输出尽量结构化（Markdown 或轻量 JSON）。
 3. 关键命令、关键文件路径、关键决策必须清晰可追溯。
+4. 项目任何变更（文件新增/修改/删除/迁移）都必须写入 lifelog。
 

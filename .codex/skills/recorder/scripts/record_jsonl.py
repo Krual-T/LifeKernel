@@ -196,7 +196,7 @@ def build_lifelog_entry(description: str, timestamp: str, module: str, skill_nam
         "source": source or "conversation",
         "description": description,
         "action": description,
-        "status": status or "completed",
+        "status": status or "done",
     }
     entry["type"] = "lifelog"
     entry["content"] = description
@@ -409,7 +409,7 @@ def main() -> None:
                 module=args.module or "work",
                 skill_name="recorder",
                 source=args.source or "conversation",
-                status="completed",
+                status="done",
                 related_files=["workspace/records/knowledge/knowledge.jsonl"],
             )
             validate_record(lifelog_entry, "lifelog", schema)
@@ -450,7 +450,7 @@ def main() -> None:
                 module=args.module or "news",
                 skill_name="recorder",
                 source=args.source or "conversation",
-                status="completed",
+                status="done",
                 related_files=["workspace/records/news/news.jsonl"],
             )
             validate_record(lifelog_entry, "lifelog", schema)

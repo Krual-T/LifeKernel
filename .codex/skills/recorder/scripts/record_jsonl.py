@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+from typing import Any
 import uuid
 from datetime import datetime
 
@@ -144,7 +145,7 @@ def write_records(path: str, records: list) -> None:
 
 def build_lifelog_entry(description: str, timestamp: str, module: str, skill_name: str,
                          source: str, status: str, related_files: list) -> dict:
-    entry = {
+    entry: dict[str, Any] = {
         "id": generate_id(),
         "timestamp": timestamp,
         "module": module or "work",

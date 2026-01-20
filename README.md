@@ -76,7 +76,7 @@ git checkout <public_branch_name>
 git filter-repo --path workspace/records --invert-paths --force
 
 # 4) 推送到 public
-git push public <public_branch_name>:main --force
+git push public <public_branch_name> --force
 
 # 5) 切回私有主分支继续工作
 git checkout main
@@ -84,7 +84,7 @@ git checkout main
 
 说明：
 - `<public_branch_name>` 是发布用分支，**只用于推送 public**。
-- `git push public <public_branch_name>:main` 表示将本地分支推送为 `public` 远端的 `main` 分支。
+- `git push public <public_branch_name>` 表示将同名分支推送到 `public` 远端。
 - 该流程会重写发布分支历史，不影响私有 `main`。
 
 ## 注意事项

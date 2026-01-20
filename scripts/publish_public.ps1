@@ -1,8 +1,8 @@
 param(
-    [string]$PublicRemote = "public",
+    [string]$PublicPath = $(Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) "LifeKernel-Public"),
     [string]$SourceRemote = "origin",
-    [string]$SourceBranch = "main",
-    [string]$PublicBranch = "main"
+    [string]$PublicRemote = "public",
+    [string]$Branch = "main"
 )
 
 Set-StrictMode -Version Latest
@@ -23,29 +23,21 @@ function Assert-FilterRepo {
 Assert-Git
 Assert-FilterRepo
 
-try {
-    $sourceUrl = (git remote get-url $SourceRemote).Trim()
-} catch {
-    throw "Remote '$SourceRemote' not found. Please add it first."
+if (-not (Test-Path $PublicPath)) {
+    throw "Public repo not found at: $PublicPath"
 }
 
+Push-Location $PublicPath
 try {
-    $publicUrl = (git remote get-url $PublicRemote).Trim()
-} catch {
-    throw "Remote '$PublicRemote' not found. Please add it first."
-}
+    git remote get-url $SourceRemote | Out-Null
+    git remote get-url $PublicRemote | Out-Null
 
-$tempRoot = Join-Path $env:TEMP ("lk_public_publish_" + [Guid]::NewGuid().ToString("N"))
-git clone --no-hardlinks $sourceUrl $tempRoot | Out-Null
+    git fetch $SourceRemote | Out-Null
+    git checkout $Branch | Out-Null
+    git pull $SourceRemote $Branch | Out-Null
 
-Push-Location $tempRoot
-try {
-    git checkout $SourceBranch | Out-Null
     git filter-repo --path workspace/records --invert-paths --force
-
-    git remote add $PublicRemote $publicUrl | Out-Null
-    git push $PublicRemote "$SourceBranch`:$PublicBranch" --force
+    git push $PublicRemote $Branch --force
 } finally {
     Pop-Location
-    Remove-Item -Recurse -Force $tempRoot
 }

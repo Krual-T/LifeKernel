@@ -7,7 +7,7 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
 
 ## 概述
 
-将“记录类数据”统一为 JSONL（append-only）写入，并确保 UTF-8 无 BOM。支持在写入知识（knowledge）时自动写一条 lifelog（auto record）。**所有记录必须遵循 `.codex/schema.json` 的强约束 Schema**。
+将“记录类数据”统一为 JSONLCRUD，并确保 UTF-8 无 BOM。**所有记录必须遵循 `.codex/schema.json` 的强约束 Schema**。
 
 ## 适用场景
 
@@ -41,8 +41,8 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
    - 其他字段按 `.codex/schema.json` 的 record_type 必填/可选项填充
    - `id`：默认自动生成 UUID（`uuid4`），如需手动指定需显式传入
    - 业务字段按 record_type schema 补充
-3. **UTF-8 无 BOM 追加写入**
-   - 记录必须 append-only
+3. **UTF-8 无 BOM CRUD**
+   - CRUD必须符合`.codex/schema.json` 的强约束 Schema`
 4. **可选：auto record**
    - 当 record_type = knowledge 且 auto_record = true 时，追加一条 lifelog
 5. **必要时更新可视化**

@@ -20,7 +20,7 @@ git remote add public https://github.com/<you>/LifeKernel.git
 2) 安装 filter-repo（用于生成不含 records 的发布分支）
 
 ```powershell
-python -m pip install git-filter-repo
+uv add git-filter-repo
 ```
 
 ## 发布开源（每次需要公开时执行）

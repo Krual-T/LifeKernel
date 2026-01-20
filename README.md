@@ -69,21 +69,22 @@ git checkout main
 git pull origin main
 
 # 2) 创建/更新发布分支（从私有主分支复制）
-git branch -f public-main main
+git branch -f <public_branch_name> main
 
 # 3) 在发布分支中移除 records（改写历史）
-git checkout public-main
+git checkout <public_branch_name>
 git filter-repo --path workspace/records --invert-paths --force
 
 # 4) 推送到 public
-git push public public-main:main --force
+git push public <public_branch_name>:main --force
 
 # 5) 切回私有主分支继续工作
 git checkout main
 ```
 
 说明：
-- `public-main` 是发布用分支，**只用于推送 public**。
+- `<public_branch_name>` 是发布用分支，**只用于推送 public**。
+- `git push public <public_branch_name>:main` 表示将本地分支推送为 `public` 远端的 `main` 分支。
 - 该流程会重写发布分支历史，不影响私有 `main`。
 
 ## 注意事项

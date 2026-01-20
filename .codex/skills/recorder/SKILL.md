@@ -1,9 +1,9 @@
 ---
 name: recorder
-description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL 记录技巧，支持新增/更新/删除（CRUD）、UUID 自动 id 与 auto record 到 lifelog。
+description: 统一记录 knowledge/news/lifelog/agent_kernel_memory/tasks 的通用 JSONL 记录技巧，支持新增/更新/删除（CRUD）、UUID 自动 id 与 auto record 到 lifelog。
 ---
 
-# 统一 JSONL 记录（knowledge / news / lifelog / memory / tasks）
+# 统一 JSONL 记录（knowledge / news / lifelog / agent_kernel_memory / tasks）
 
 ## 概述
 
@@ -11,12 +11,12 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
 
 ## 适用场景
 
-- 新增或更新 knowledge、news、lifelog、memory、tasks 等记录类数据
+- 新增或更新 knowledge、news、lifelog、agent_kernel_memory、tasks 等记录类数据
 - 希望自动化记录并保持结构统一
 
 ## 输入
 
-- record_type：`knowledge` | `news` | `lifelog` | `memory` | `tasks` | `update` | `delete`
+- record_type：`knowledge` | `news` | `lifelog` | `agent_kernel_memory` | `tasks` | `update` | `delete`
 - update：按 `id + key + value` 查询记录后就地更新（覆盖写入）
 - delete：按 `id` 查询记录后删除
 - data：记录内容（按各自 schema）
@@ -34,7 +34,7 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
    - knowledge：`workspace/records/knowledge/knowledge.jsonl`
    - news：`workspace/records/news/news.jsonl`
    - lifelog：`workspace/records/lifelog/YYYY/MM/DD.jsonl`
-   - memory：`workspace/records/memory/memory.jsonl`
+   - agent_kernel_memory：`workspace/records/agent_kernel_memory/agent_kernel_memory.jsonl`
    - tasks：`workspace/records/tasks/tasks.jsonl`
 2. **生成记录对象**
    - 统一字段必填：`id`、`type`、`timestamp`、`source`、`content`
@@ -52,11 +52,11 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
 ## 更新记录（CRUD）
 
 用于在 JSONL 中“就地更新/删除”记录：先查询目标记录与所在文件，再读取文件并覆盖写回（保留原有非 JSON 行）。
-**注意**：对 `memory` 的 delete 为**逻辑删除**（写入 `deleted: true`），不进行物理删除。
+**注意**：对 `agent_kernel_memory` 的 delete 为**逻辑删除**（写入 `deleted: true`），不进行物理删除。
 
 参数：
 - record_type：`update`
-- target_type：`knowledge` | `news` | `lifelog` | `memory` | `tasks`
+- target_type：`knowledge` | `news` | `lifelog` | `agent_kernel_memory` | `tasks`
 - id：目标记录 id
 - key：需要更新的字段名
 - value / value_json：更新值（字符串或 JSON）
@@ -78,7 +78,7 @@ python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type delet
 ## 脚本（推荐）
 
 - `scripts/record_jsonl.py`
-  - 统一写入 knowledge/lifelog/memory/tasks
+  - 统一写入 knowledge/lifelog/agent_kernel_memory/tasks
   - knowledge 默认 auto record 到 lifelog
 
 示例：
@@ -104,7 +104,7 @@ python ./.codex/skills/recorder/scripts/record_jsonl.py --record-type lifelog --
 ## 字段规范（通用）
 
 - `id`：UUID（`uuid4`）
-- `type`：`knowledge` | `news` | `lifelog` | `memory` | `tasks`
+- `type`：`knowledge` | `news` | `lifelog` | `agent_kernel_memory` | `tasks`
 - `timestamp`：ISO8601
 - `source`：`conversation` | `from_screenshot`
 - `content`：用于统一检索的正文摘要

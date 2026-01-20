@@ -50,7 +50,7 @@ def normalize_content(record_type: str, record: dict) -> str:
         return record.get("title") or record.get("summary") or "未命名"
     if record_type == "lifelog":
         return record.get("action") or record.get("description") or "未命名"
-    if record_type == "memory":
+    if record_type == "agent_kernel_memory":
         return record.get("note") or record.get("summary") or record.get("title") or "未命名"
     if record_type == "tasks":
         return record.get("title") or record.get("details") or "未命名任务"
@@ -91,8 +91,8 @@ def get_record_path(record_type: str, record_id: str = "") -> str:
         return os.path.join("workspace", "records", "knowledge", "knowledge.jsonl")
     if record_type == "news":
         return os.path.join("workspace", "records", "news", "news.jsonl")
-    if record_type == "memory":
-        return os.path.join("workspace", "records", "memory", "memory.jsonl")
+    if record_type == "agent_kernel_memory":
+        return os.path.join("workspace", "records", "agent_kernel_memory", "agent_kernel_memory.jsonl")
     if record_type == "tasks":
         return os.path.join("workspace", "records", "tasks", "tasks.jsonl")
     raise SystemExit(f"unsupported record type: {record_type}")
@@ -235,7 +235,7 @@ def normalize_priority(value: str | None) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Unified JSONL recorder")
-    parser.add_argument("--record-type", required=True, choices=["knowledge", "news", "lifelog", "memory", "tasks", "update", "delete"])
+    parser.add_argument("--record-type", required=True, choices=["knowledge", "news", "lifelog", "agent_kernel_memory", "tasks", "update", "delete"])
     parser.add_argument("--timestamp", default=None)
     parser.add_argument("--id", dest="record_id", default=None)
     parser.add_argument("--module", default=None)
@@ -264,7 +264,7 @@ def main() -> None:
     parser.add_argument("--scope", default=None)
 
     parser.add_argument("--extra", default=None, help="Extra JSON string to merge into record")
-    parser.add_argument("--target-type", default=None, choices=["knowledge", "news", "lifelog", "memory", "tasks"])
+    parser.add_argument("--target-type", default=None, choices=["knowledge", "news", "lifelog", "agent_kernel_memory", "tasks"])
     parser.add_argument("--key", dest="update_key", default=None)
     parser.add_argument("--value", dest="update_value", default=None)
     parser.add_argument("--value-json", dest="update_value_json", default=None)
@@ -313,7 +313,7 @@ def main() -> None:
                 if args.target_type == "lifelog":
                     if "action" not in data or not data.get("action"):
                         data["action"] = data.get("description") or data.get("content")
-                if args.target_type == "memory":
+                if args.target_type == "agent_kernel_memory":
                     if "scope" not in data:
                         data["scope"] = "user"
                     if "deleted" not in data:
@@ -334,7 +334,7 @@ def main() -> None:
         if not args.record_id:
             raise SystemExit("--id is required for delete")
         path, _ = find_record_by_id(args.target_type, args.record_id)
-        if args.target_type == "memory":
+        if args.target_type == "agent_kernel_memory":
             records = load_records_with_raw(path)
             updated_any = False
             for item in records:
@@ -346,14 +346,14 @@ def main() -> None:
                     if "timestamp" not in data or not data.get("timestamp"):
                         data["timestamp"] = timestamp
                     if "type" not in data or not data.get("type"):
-                        data["type"] = "memory"
+                        data["type"] = "agent_kernel_memory"
                     if "source" not in data or not data.get("source"):
                         data["source"] = args.source or "conversation"
                     if "content" not in data or not data.get("content"):
-                        data["content"] = normalize_content("memory", data)
+                        data["content"] = normalize_content("agent_kernel_memory", data)
                     if "scope" not in data:
                         data["scope"] = "user"
-                    validate_record(data, "memory", schema)
+                    validate_record(data, "agent_kernel_memory", schema)
                     item["dirty"] = True
                     updated_any = True
             if not updated_any:
@@ -475,11 +475,11 @@ def main() -> None:
         validate_record(entry, "lifelog", schema)
         append_jsonl(get_lifelog_path(timestamp), entry)
 
-    elif args.record_type == "memory":
+    elif args.record_type == "agent_kernel_memory":
         record = {
             "id": args.record_id or generate_id(),
             "timestamp": timestamp,
-            "type": "memory",
+            "type": "agent_kernel_memory",
             "note": args.note or args.summary or args.title,
             "deleted": False,
             "scope": args.scope or "user",
@@ -487,13 +487,13 @@ def main() -> None:
         if args.module:
             record["module"] = args.module
         record["source"] = args.source or "conversation"
-        record["content"] = normalize_content("memory", record)
+        record["content"] = normalize_content("agent_kernel_memory", record)
         if related_files:
             record["related_files"] = related_files
         if args.extra:
             record.update(json.loads(args.extra))
-        validate_record(record, "memory", schema)
-        append_jsonl(os.path.join("workspace", "records", "memory", "memory.jsonl"), record)
+        validate_record(record, "agent_kernel_memory", schema)
+        append_jsonl(os.path.join("workspace", "records", "agent_kernel_memory", "agent_kernel_memory.jsonl"), record)
 
     else:  # tasks
         task_status = normalize_task_status(args.status)

@@ -5,11 +5,11 @@
 2. Windows 使用 **PowerShell 7（pwsh）**；Linux 使用 **bash** 作为默认终端。
 3. 目录结构（示例）：
    ```text
-   D:/Projects/LifeKernel/
+   ${PROJECT_ROOT}/
    ├─ workspace/            # 主要工作区
    ├─ .codex/
    │  └─ skills/            # 项目内技能库
-   └─ docs/                 # 文档与设计说明
+   └─ .env.example/         # 环境变量示例
    ```
 4. 权限与安全（必须遵守）：
    - 禁止操作系统目录（如 `C:\Windows`、`C:\Program Files`）。
@@ -56,11 +56,13 @@
 
 ### 4.2 Skills 评估与完善
 - 遍历 `.codex/skills` 目录。
-- 每个 skill 评分 1–10，并给出简短原因。
+- 每个 skill 评分 1–10，并给出简短原因（**以测试结果为主**，非主观印象）。
 - 提供明确的改进清单；用户确认后执行修改。
+  - 若无可运行测试，用最小可复现用例验证流程，再给出评分与依据。
 
 ### 4.3 Git 全自动流程（已授权）
 - 当 `.codex/skills` 或 `workspace` 有变更时：
+  - **启用节流（Throttling）**：优先在任务状态变为完成时提交；否则每 60 分钟最多自动提交一次。
   - 自动执行：`git add` → `git commit` → `git push`
   - commit message 自动生成（简洁、可读）
 - 用户可随时说：
@@ -69,6 +71,14 @@
 
 ### 4.4 任务与记录规范（统一入口）
 **统一入口**：所有记录类数据必须通过 `recorder` 写入；不要手写 JSONL。
+**Schema 强约束**：在 `.codex/schema.json` 中维护统一字段规范，`recorder` 必须按 Schema 写入。
+
+#### 4.4.0 JSONL Schema（必填字段）
+- **通用字段**：`id`（UUID），`type`（枚举），`timestamp`（ISO 8601），`source`（string），`content`（string）。
+- **tasks**：通用字段 + `status`（todo|doing|done），`priority`（P0–P3），`due`（可空，ISO 8601）。
+- **knowledge**：通用字段 + `tags`（string[]）。
+- **lifelog**：通用字段 + `action`（string）。
+- **memory**：通用字段 + `scope`（user|system），`deleted`（bool, 默认 false）。
 
 #### 4.4.1 任务管理
 - **进行中任务**：`workspace/records/tasks/task_list.md`
@@ -85,7 +95,8 @@
 - 路径：`workspace/records/memory/`
 - 用于记录偏好、决策与上下文（仅内部使用）。
 - 记录内容统一中文。
-- **允许随时修改/清理 memory，包括删除不再需要的信息。**
+- **允许随时修改/清理 memory，但禁止物理删除**：改为逻辑删除（`deleted: true`）。
+- 若检测到疑似过时信息，需先输出确认清理提示，再执行逻辑删除。
 
 ### 4.5 知识与想法
 - 知识与想法统一写入 `workspace/records/knowledge/knowledge.jsonl`。
@@ -110,6 +121,7 @@
 
 ## 6. 初始化检查（每次会话开始时）
 1. 检查 `.codex/skills` 与 `workspace` 是否存在。
-2. 提示已存在的 skills 与记录文件（简要概览）。
-3. 用 3–5 句话总结：目标理解 + 本次优先事项。
+2. **仅提示统计数字**（如：skills 数量、进行中任务数量、当日记录数量）。
+3. 仅在用户明确请求某个功能/技能时，再读取对应 skill 或记录内容。
+4. 用 3–5 句话总结：目标理解 + 本次优先事项。
 

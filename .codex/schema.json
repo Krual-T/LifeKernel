@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "common": {
+    "required": [
+      "id",
+      "type",
+      "timestamp",
+      "source",
+      "content"
+    ]
+  },
+  "types": {
+    "knowledge": {
+      "required": [
+        "tags"
+      ],
+      "optional": [
+        "module",
+        "related_files",
+        "title",
+        "summary",
+        "problem",
+        "symptom",
+        "root_cause",
+        "solution",
+        "environment",
+        "examples"
+      ]
+    },
+    "news": {
+      "required": [
+        "tags"
+      ],
+      "optional": [
+        "module",
+        "related_files",
+        "title",
+        "summary"
+      ]
+    },
+    "lifelog": {
+      "required": [
+        "action"
+      ],
+      "optional": [
+        "module",
+        "related_files",
+        "status",
+        "skill_name",
+        "description"
+      ]
+    },
+    "memory": {
+      "required": [
+        "scope",
+        "deleted"
+      ],
+      "optional": [
+        "module",
+        "related_files",
+        "note"
+      ]
+    },
+    "tasks": {
+      "required": [
+        "status",
+        "priority"
+      ],
+      "optional": [
+        "module",
+        "related_files",
+        "title",
+        "details",
+        "due",
+        "completed_at"
+      ]
+    }
+  },
+  "enums": {
+    "status": [
+      "todo",
+      "doing",
+      "done"
+    ],
+    "priority": [
+      "P0",
+      "P1",
+      "P2",
+      "P3"
+    ],
+    "scope": [
+      "user",
+      "system"
+    ]
+  }
+}

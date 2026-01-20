@@ -7,7 +7,7 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
 
 ## 概述
 
-将“记录类数据”统一为 JSONL（append-only）写入，并确保 UTF-8 无 BOM。支持在写入知识（knowledge）时自动写一条 lifelog（auto record）。
+将“记录类数据”统一为 JSONL（append-only）写入，并确保 UTF-8 无 BOM。支持在写入知识（knowledge）时自动写一条 lifelog（auto record）。**所有记录必须遵循 `.codex/schema.json` 的强约束 Schema**。
 
 ## 适用场景
 
@@ -37,7 +37,8 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
    - memory：`workspace/records/memory/memory.jsonl`
    - tasks：`workspace/records/tasks/tasks.jsonl`
 2. **生成记录对象**
-   - 统一字段建议：`id`、`timestamp`、`source`、`module`、`related_files`
+   - 统一字段必填：`id`、`type`、`timestamp`、`source`、`content`
+   - 其他字段按 `.codex/schema.json` 的 record_type 必填/可选项填充
    - `id`：默认自动生成 UUID（`uuid4`），如需手动指定需显式传入
    - 业务字段按 record_type schema 补充
 3. **UTF-8 无 BOM 追加写入**
@@ -51,6 +52,7 @@ description: 统一记录 knowledge/news/lifelog/memory/tasks 的通用 JSONL �
 ## 更新记录（CRUD）
 
 用于在 JSONL 中“就地更新/删除”记录：先查询目标记录与所在文件，再读取文件并覆盖写回（保留原有非 JSON 行）。
+**注意**：对 `memory` 的 delete 为**逻辑删除**（写入 `deleted: true`），不进行物理删除。
 
 参数：
 - record_type：`update`
@@ -102,10 +104,12 @@ python ./.codex/skills/recorder/scripts/record_jsonl.py --record-type lifelog --
 ## 字段规范（通用）
 
 - `id`：UUID（`uuid4`）
+- `type`：`knowledge` | `news` | `lifelog` | `memory` | `tasks`
 - `timestamp`：ISO8601
 - `source`：`conversation` | `from_screenshot`
-- `module`：`work` | `personal` | `learning` | `health`
-- `related_files`：workspace 内相关路径数组
+- `content`：用于统一检索的正文摘要
+- `module`：`work` | `personal` | `learning` | `health`（可选）
+- `related_files`：workspace 内相关路径数组（可选）
 
 ## 编码规范
 

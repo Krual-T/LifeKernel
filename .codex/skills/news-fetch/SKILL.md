@@ -15,7 +15,8 @@ description: "Search and archive significant global events (7-day window). Topic
 2. **确认范围**
    - 默认范围：国际冲突、贸易政策、中国政策、AI/Agent（含公司/实验室/论文）
    - 默认关注实体：OpenAI、Google/DeepMind、阿里、字节、腾讯、智谱、清华相关实验室、幻方量化
-   - 若用户提供新增实体或范围，加入 `scope.entities_watch` / `scope.topics`
+   - 若用户指定主题（例如“Agent 论文”），以用户主题为主，并加入 `scope.topics`
+   - 任务结束后将新增主题写回本技能的默认 topics 清单（保证下次可复用）
 
 3. **多路并行检索（按 Topic 拆分 Query）**
    - 必须使用 `web.run`，时间窗限定最近 7 天
@@ -55,6 +56,24 @@ description: "Search and archive significant global events (7-day window). Topic
      - `workspace/records/news/news_archive/YYYY/MM/DD/curated_set.jsonl`
    - 归档完成后再重置两个文件为空白（保留文件）。
 
+## 最小可执行步骤（PowerShell）
+
+```powershell
+# 1) 初始化/清空 list 与 set
+"" | Set-Content -Path "workspace/records/news/staging_candidates.jsonl" -Encoding utf8
+"" | Set-Content -Path "workspace/records/news/curated_set.jsonl" -Encoding utf8
+
+# 2) 初始化 TODO
+@'
+# News Fetch TODO
+- 分 Topic 检索
+- 语义去重
+- 写入 news（原子化）
+- 补充 coverage_gap
+- 产出摘要（可选）
+'@ | Set-Content -Path "workspace/records/news/news-fetch_todo_list.md" -Encoding utf8
+```
+
 ## 推荐记录结构（news）
 
 ```json
@@ -62,6 +81,7 @@ description: "Search and archive significant global events (7-day window). Topic
   "date": "YYYY-MM-DD",
   "category": "AI 自动判定（可随主题变化）",
   "summary": "...",
+  "tags": ["news", "ai", "agent"],
   "sources": [{"name":"...","url":"..."}],
   "entities": ["..."],
   "source_rank": "official|media|preprint"
@@ -72,7 +92,7 @@ description: "Search and archive significant global events (7-day window). Topic
 
 ```powershell
 $extra = @'
-{"type":"news_digest","time_window":{"start":"2026-01-13","end":"2026-01-19","timezone":"local"},"scope":{"topics":["国际冲突","贸易政策","中国政策","AI与Agent"],"entities_watch":["OpenAI","Google/DeepMind","阿里","字节","腾讯","智谱","清华相关实验室","幻方量化"]},"items":[],"dedupe":{"strategy":"title+source+date","dropped":0}}
+{"time_window":{"start":"2026-01-13","end":"2026-01-19","timezone":"local"},"scope":{"topics":["国际冲突","贸易政策","中国政策","AI与Agent"],"entities_watch":["OpenAI","Google/DeepMind","阿里","字节","腾讯","智谱","清华相关实验室","幻方量化"]},"dedupe":{"strategy":"title+source+date","dropped":0}}
 '@
-python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type news --title "新闻扫描（最近7天）" --summary "本次新闻扫描概览。" --tags "news,international,policy,ai,agent" --module "news" --source "web" --extra $extra
+python .\\.codex\\skills\\recorder\\scripts\\record_jsonl.py --record-type news --title "单条新闻标题" --summary "单条新闻摘要" --tags "news,ai,agent" --module "news" --source "web" --extra $extra
 ```

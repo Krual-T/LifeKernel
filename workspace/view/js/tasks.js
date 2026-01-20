@@ -47,12 +47,11 @@ function makeStatCard(title, value, accentClass) {
 function renderTaskTable(tasks) {
   const table = [
     '<table>',
-    '<thead><tr><th class="table-col-id">ID</th><th class="table-col-title">Title</th><th>Status</th><th>Priority</th><th>Module</th><th class="table-col-date">Created</th><th class="table-col-date">Completed</th><th class="table-col-date">Due</th></tr></thead>',
+    '<thead><tr><th class="table-col-title">Title</th><th>Status</th><th>Priority</th><th>Module</th><th class="table-col-date">Created</th><th class="table-col-date">Completed</th><th class="table-col-date">Due</th></tr></thead>',
     '<tbody>'
   ];
   for (const t of tasks) {
-    const idText = t.id || '';
-    table.push(`<tr><td><span class="mono truncate" title="${idText}">${idText}</span></td><td>${t.title || ''}</td><td>${statusBadge(t.status)}</td><td>${priorityBadge(t.priority)}</td><td>${t.module || ''}</td><td><span class="mono">${formatDateShort(t.created_at)}</span></td><td><span class="mono">${formatDateShort(t.completed_at)}</span></td><td><span class="mono">${formatDateShort(t.due_time || t.due)}</span></td></tr>`);
+    table.push(`<tr><td>${t.title || ''}</td><td>${statusBadge(t.status)}</td><td>${priorityBadge(t.priority)}</td><td>${t.module || ''}</td><td><span class="mono">${formatDateShort(t.created_at)}</span></td><td><span class="mono">${formatDateShort(t.completed_at)}</span></td><td><span class="mono">${formatDateShort(t.due_time || t.due)}</span></td></tr>`);
   }
   table.push('</tbody></table>');
   const tableEl = document.getElementById('taskTable');

@@ -52,7 +52,7 @@ function renderTaskTable(tasks) {
   ];
   for (const t of tasks) {
     const idText = t.id || '';
-    table.push(`<tr><td><span class="mono truncate" title="${idText}">${idText}</span></td><td>${t.title || ''}</td><td>${statusBadge(t.status)}</td><td>${priorityBadge(t.priority)}</td><td>${t.module || ''}</td><td><span class="mono">${formatDateShort(t.created_at)}</span></td><td><span class="mono">${formatDateShort(t.completed_at)}</span></td><td><span class="mono">${formatDateShort(t.due_time)}</span></td></tr>`);
+    table.push(`<tr><td><span class="mono truncate" title="${idText}">${idText}</span></td><td>${t.title || ''}</td><td>${statusBadge(t.status)}</td><td>${priorityBadge(t.priority)}</td><td>${t.module || ''}</td><td><span class="mono">${formatDateShort(t.created_at)}</span></td><td><span class="mono">${formatDateShort(t.completed_at)}</span></td><td><span class="mono">${formatDateShort(t.due_time || t.due)}</span></td></tr>`);
   }
   table.push('</tbody></table>');
   const tableEl = document.getElementById('taskTable');
@@ -61,7 +61,8 @@ function renderTaskTable(tasks) {
 
 function renderTasks(tasks) {
   const pending = tasks.filter(t => t.status !== 'done');
-  pending.sort((a, b) => (a.due_time || '').localeCompare(b.due_time || ''));
+  const dueOf = t => t.due_time || t.due || '';
+  pending.sort((a, b) => dueOf(a).localeCompare(dueOf(b)));
   const done = tasks.filter(t => t.status === 'done');
 
   const summary = document.getElementById('taskSummary');
@@ -87,7 +88,7 @@ function renderTasks(tasks) {
           <div class="task-title">${t.title || ''}</div>
           <div class="task-meta">
             <span class="pill">${t.module || 'work'}</span>
-            <span>Status ${statusBadge(t.status)} | Priority ${priorityBadge(t.priority)} | Due <span class="mono">${formatDateShort(t.due_time) || '-'}</span></span>
+            <span>Status ${statusBadge(t.status)} | Priority ${priorityBadge(t.priority)} | Due <span class="mono">${formatDateShort(t.due_time || t.due) || '-'}</span></span>
           </div>
           <div>${t.details || ''}</div>
         `;
@@ -114,7 +115,7 @@ function applyTaskFilters() {
   const taskModule = document.getElementById('taskModule')?.value || 'all';
 
   const tasks = allTasks.filter(t => {
-    const dateField = t.due_time || t.created_at || '';
+    const dateField = t.due_time || t.due || t.created_at || '';
     const inRange = inDateRange(dateField, start, end);
     const inName = !name || String(t.title || '').toLowerCase().includes(name);
     const inStatus = taskStatus === 'all' || t.status === taskStatus;

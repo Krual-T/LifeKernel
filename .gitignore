@@ -37,3 +37,6 @@ Thumbs.db
 
 # Lab outputs
 workspace/lab/
+
+# Local scripts (do not track)
+scripts_local/

@@ -64,6 +64,8 @@
   - 可复用步骤
 - 用户确认后再创建或更新 `SKILL.md`。
 
+- 遇到长任务时：将规划写入 `workspace/records/agent_kernel_memory/task_list.md`，按 step-by-step 完成；完成后清空该文件。
+
 ### 4.2 Skills 评估与完善
 - 遍历 `.codex/skills` 目录。
 - 每个 skill 评分 1–10，并给出简短原因（**以测试结果为主**，非主观印象）。
@@ -71,7 +73,7 @@
   - 若无可运行测试，用最小可复现用例验证流程，再给出评分与依据。
 
 ### 4.3 Git 全自动流程（已授权）
-- 当 `.codex/skills` 或 `workspace` 有变更时：
+- 当仓库内**任一受控文件**有变更时（包含 `AGENTS.md` 与 `.codex/schema.json` 等）：
   - 自动执行：`git add` → `git commit` → `git push`
   - commit message 自动生成（简洁、可读）
 - 用户可随时说：

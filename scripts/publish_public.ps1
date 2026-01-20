@@ -15,8 +15,10 @@ function Assert-Git {
 }
 
 function Assert-FilterRepo {
-    if (-not (Get-Command "git-filter-repo" -ErrorAction SilentlyContinue)) {
-        throw "git-filter-repo not found in PATH. Install it first (e.g., 'uv add git-filter-repo')."
+    $hasUv = Get-Command "uv" -ErrorAction SilentlyContinue
+    $hasFilterRepo = Get-Command "git-filter-repo" -ErrorAction SilentlyContinue
+    if (-not $hasUv -and -not $hasFilterRepo) {
+        throw "Neither 'uv' nor 'git-filter-repo' found. Install with 'uv add git-filter-repo'."
     }
 }
 
@@ -36,7 +38,11 @@ try {
     git checkout $Branch | Out-Null
     git pull $SourceRemote $Branch | Out-Null
 
-    git filter-repo --path workspace/records --invert-paths --force
+    if (Get-Command "uv" -ErrorAction SilentlyContinue) {
+        uv run git-filter-repo --path workspace/records --invert-paths --force
+    } else {
+        git filter-repo --path workspace/records --invert-paths --force
+    }
     git push $PublicRemote $Branch --force
 } finally {
     Pop-Location
